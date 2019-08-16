@@ -4,7 +4,7 @@ require "bunny"
 class RabbitMq
   attr_accessor :conn, :q, :x, :ch
 
-  def initialize
+  def initialize(queue = "america_de_cali")
      STDOUT.sync = true
 
      @conn = Bunny.new(host:  'localhost',
@@ -15,9 +15,15 @@ class RabbitMq
 
      @conn.start
 
-     @ch = conn.create_channel
-     @q  = ch.queue("america_de_cali", :auto_delete => true)
-     @x  = ch.default_exchange
+     @ch = @conn.create_channel
+     @q  = @ch.queue(queue, auto_delete: true)
+     @x  = @ch.default_exchange
+
+    # @q.subscribe(block: true) do |delivery_info, _properties, body|
+    #   puts " [x] Received #{body}"
+    # end
+
+    # close_connection
   end
 
   def enqueue(msg:)
