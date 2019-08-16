@@ -7,14 +7,12 @@ class Spider < ApplicationRecord
 
       links = get_links(url: url, html_content: html_content)
 
-      url = links[22]
+      links.each {|link| Spider.enqueue(msg: link)}
+
+      url = Spider.queue_pop
+
       count += 1
     end
-
-    links.each {|link| Spider.enqueue(msg: link)}
-
-    url = Spider.queue_pop
-    p links
   end
 
   def self.grab_web_page(url:)
@@ -41,7 +39,7 @@ class Spider < ApplicationRecord
   def self.enqueue(msg:)
     queue = RabbitMq.connection
 
-    RabbitMQ.send_message(queue:, msg:)
+    RabbitMq.send_message(queue: queue, msg: msg)
   end
 
   def self.queue_pop

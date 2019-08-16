@@ -2,24 +2,17 @@ class RabbitMq < ApplicationRecord
   def self.connection
      STDOUT.sync = true
 
-     conn = Bunny.new
-              (
-                host:  'localhost',
-                port:  '5672',
-                vhost: '/',
-                user:  'guest',
-                pass:  'guest'
-              )
+     conn = Bunny.new(host:  'localhost',
+                      port:  '5672',
+                      vhost: '/',
+                      user:  'guest',
+                      pass:  'guest')
 
      conn.start
 
      ch = conn.create_channel
-     q  = ch.queue("bunny.examples.hello_world", :auto_delete => true)
+     q  = ch.queue("crawler_1", :auto_delete => true)
      x  = ch.default_exchange
-
-     q.subscribe do |delivery_info, metadata, payload|
-       puts "Received #{payload}"
-     end
 
      {connection: conn, q: q, x: x, ch: ch}
   end
@@ -29,7 +22,7 @@ class RabbitMq < ApplicationRecord
 # Probably not necessary when configured properly in rails config files.
 
   def self.send_message(queue:, msg:)
-    x.publish(msg, :routing_key => queue[:q].name)
+    queue[:x].publish(msg, :routing_key => queue[:q].name)
   end
 
   def self.extract_message(queue:)
