@@ -5,8 +5,9 @@ class AbstractQueue < RabbitMq
      super
    end
 
-#  def self.conection
-#  end
+  def start_conection
+    super
+  end
 
   def enqueue(msg:)
     super
@@ -17,5 +18,6 @@ class AbstractQueue < RabbitMq
   end
 
   def close_conection
+    super
   end
 end

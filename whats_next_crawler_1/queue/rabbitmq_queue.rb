@@ -16,7 +16,7 @@ class RabbitMq
      @conn.start
 
      @ch = conn.create_channel
-     @q  = ch.queue("crawler_1", :auto_delete => true)
+     @q  = ch.queue("america_de_cali", :auto_delete => true)
      @x  = ch.default_exchange
   end
 
@@ -26,12 +26,14 @@ class RabbitMq
 
   def retrieve
     delivery_info, properties, msg = @q.pop
-p "pop"
-p msg
     msg
   end
 
-  def close_connection(queue:)
+  def start_connection
+    @conn.start
+  end
+
+  def close_connection
     @conn.close
   end
 end
