@@ -7,9 +7,12 @@ class Spider
   def self.gather_web_pages(url = "http://www.makeitreal.camp")
     queue = FactoryQueue.create
 
+    count = 0
+
     queue.enqueue(msg: url)
 
     queue.q.subscribe(block: true) do |delivery_info, properties, body|
+p     body
       html_content = grab_web_page(url: body)
 
       links = get_links(url: url, html_content: html_content)
