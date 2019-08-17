@@ -14,7 +14,8 @@ class Spider
 
       links = get_links(url: url, html_content: html_content)
 
-      links.each {|link| queue.enqueue(msg: link)}
+        links.each {|link| queue.enqueue(msg: link)}
+p       count += 1
     end
   end
 
