@@ -1,7 +1,8 @@
-require "rubygems"
-require "bunny"
+require_relative "abstract_queue"
+require          "rubygems"
+require          "bunny"
 
-class RabbitMq
+class RabbitMq < AbstractQueue
   attr_accessor :conn, :q, :x, :ch
 
   def initialize(queue = "america_de_cali")
@@ -18,16 +19,16 @@ class RabbitMq
      @ch = @conn.create_channel
      @q  = @ch.queue(queue, auto_delete: true)
      @x  = @ch.default_exchange
-
-    # @q.subscribe(block: true) do |delivery_info, _properties, body|
-    #   puts " [x] Received #{body}"
-    # end
-
-    # close_connection
   end
 
   def enqueue(msg:)
    @x.publish(msg, routing_key: @q.name)
+  end
+
+  def subscribe
+    @q.subscribe(block: true) do |delivery_info, properties, body|
+      yield at(body)
+    end
   end
 
   def retrieve
