@@ -1,0 +1,44 @@
+references:
+  https://slideplayer.com/slide/7550244/
+  https://docs.google.com/viewer?url=https://raw.githubusercontent.com/Himmele/My-Blog-Repository/master/Search%20Engines/Google-%20Data%20Structures%20and%20Algorithms.pdf
+
+Database Index:
+  The indexes are DataStructures that stores a value and a memory location for an attribute in a B/tree fashon.
+  By having indexes relational databases are capable to performe fast queries over the table columns. It is
+  possible to create non default indexes that compromise multiple columns.
+
+  The indexes stores the values of a column in such a way that a b/search can be performed to respond to a query on that column.
+
+  http://coding-geek.com/how-databases-work/
+
+Search engine:
+  Search engine wy do I need them  https://www.youtube.com/watch?v=dBRUYfgj-ig
+
+  Apache Lucene (the real search engine):
+    "Lucene is a Java full-text search engine. Lucene is not a complete application, but rather a code library and API that can easily be used to add search capabilities to applications."
+
+  Apache Solr(the sercher):
+    Search platform based on lucene jaba library. Solr is designed for scalability and Fault tolerance.[2] Solr is the most popular enterprise search engine. Solr works with Hypertext Transfer Protocol (HTTP) Extensible Markup Language (XML). It offers application program interfaces (APIs) for JavaScript Object Notation (JSON), Python, and Ruby.
+    https://www.quora.com/What-is-Apache-Solr
+
+  Elastic Search:
+    Elastic search is a restful service build on lucene search engine library. Its allows to store information, index it
+    and then search or retrieve in a eficient way.
+
+    From the getting started page is clear to understand how the service work, where you define an index, for the moment
+    it sounds like a bucked where you put documents and latter through a query system you query in wich documents the word
+    searched was performed.
+
+    https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-search.html
+
+  https://blog.expertrec.com/solr-vs-elasticsearch-which-is-better/
+  Elastic search is the winner, solaris seems to be a little bit more complicated with spetialize features that are not mandatory
+  at the moment.
+  "Conclusion- Elastic search and SOLR both are pretty similar in almost all areas. If you are looking for complete freedom in your search engine development, you could take up SOLR- you will not be disappointed. Elastic search is a better choice if you are willing to shell out some money."
+
+  https://www.searchtechnologies.com/blog/solr-vs-elasticsearch-top-open-source-search
+  https://sematext.com/blog/solr-vs-elasticsearch-differences/
+  https://www.quora.com/How-do-Lucene-Elasticsearch-and-Solr-compare
+  https://www.datanyze.com/market-share/enterprise-search/elasticsearch-vs-apache-solr
+  https://www.datanyze.com/market-share/enterprise-search/elasticsearch-vs-apache-lucene
+  https://www.datanyze.com/market-share/enterprise-search/elasticsearch-vs-google-search-appliance
