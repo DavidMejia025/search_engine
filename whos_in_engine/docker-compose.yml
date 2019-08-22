@@ -1,35 +1,30 @@
 version: '2.2'
 services:
-  web:
-    image: engine:1
-    links:
-      - es01:es
-    networks:
-      - eng
-  es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.3.0
-    container_name: es01
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
     environment:
-      - node.name=es01
-      - discovery.seed_hosts=es02
-      - cluster.initial_master_nodes=es01,es02
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - esdata01:/usr/share/elasticsearch/data
+      nofile:
+        soft: 65536
+        hard: 65536
     ports:
       - 9200:9200
     networks:
       - eng
-
-volumes:
-  esdata01:
-    driver: local
+    restart: "always"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
 
 networks:
   eng:
+    driver: bridge
+volumes:
+  es-data:
+
+
