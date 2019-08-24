@@ -1,0 +1,15 @@
+source 'https://rubygems.org'
+gem 'nokogiri'
+gem 'rack', '~> 2.0.1'
+gem 'rspec'
+ruby '2.5.5'
+
+# Use Puma as the app server
+gem 'puma', '~> 3.11'
+# gem Httparty when you want to party Hard
+gem 'httparty'
+# gem bunny Rubbitmq client
+gem "bunny", ">= 2.14.1"
+gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+# elastic search gem
+gem 'elasticsearch', '~> 6.1'

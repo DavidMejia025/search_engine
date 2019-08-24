@@ -1,0 +1,86 @@
+version: '2.2'
+services:
+  eng:
+    image: mono_engine:1
+    build:
+      context: .
+    links:
+      - rabbitmq
+      - elasticsearch
+    networks:
+      - eng
+    ports:
+      - "3000:3000"
+    restart: "on-failure"
+    tty: true
+
+  rabbitmq:
+    environment:
+      - RABBITMQ_ERLANG_COOKIE='secret_cookie'
+    image: "rabbitmq:latest"
+    networks:
+      - eng
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    tty: true
+    volumes:
+      - rabbit1:/var/lib/rabbitmq
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.4
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - eng
+    ports:
+      - 9200:9200
+    restart: "always"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
+networks:
+  eng:
+volumes:
+  es-data:
+  rabbit1:
+    driver: local
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
