@@ -4,53 +4,21 @@ require "httparty"
 require "nokogiri"
 
 class Spider
-  def self.gather_web_pages(url = "http://www.makeitreal.camp")
-    queue = FactoryQueue.create
+  def self.gather_web_pages
+    spider_queue = FactoryQueue.create("spider_queue")
 
-    count = 0
+    engine_queue = FactoryQueue.create("engine_queue")
 
-    queue.enqueue(msg: url)
+p    count = 0
 
-    queue.q.subscribe(block: true) do |delivery_info, properties, body|
-p body
-      html_content = grab_web_page(url: body)
-puts "11111111111111111111111111111111111111111111!!!!!!!!!!!!!!!!111111111111111111111111111111111111111!!!!!!!!111111111"
-# calculate DocID
-# add to repository [DocID, checksum, html]
-      index_web_page(html: html_content)
-      links = get_links(url: url, html_content: html_content)
-
-        links.each {|link| queue.enqueue(msg: link)}
+    spider_queue.q.subscribe(block: true) do |delivery_info, properties, url|
+p url
+    html_content = HTTParty.get(url).body
+p "after url "
+engine_queue.enqueue(msg: {url: url, html: html_content}.to_json)
 p       count += 1
     end
   end
-
-  def self.grab_web_page(url:)
-    html_content    = HTTParty.get(url)
- puts "11111111111111111111111111111111111111111111!!!!!!!!!!!!!!!!111111111111111111111111111111111111111!!!!!!!!111111111"
-    document_parsed = parse(resource: html_content)
-  end
-
-  def self.parse(resource:)
-    Nokogiri::HTML(resource)
-  end
-
-  def self.index_web_page(html:)
-
-puts "inside index"
-return true
-  end
-
-  def self.get_links(url:, html_content:)
-    links = html_content.search("a").map{|node| node.attributes['href']&.value}
-
-    links.map do|link|
-      next nil  if link.nil? ||  link.length == 1
-
-      next link if link =~ /http/
-
-      url + link
-    end.reject{|link| link == nil}
-  end
 end
 
+p Spider.gather_web_pages

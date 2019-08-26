@@ -2,25 +2,60 @@ require_relative "abstract_indexer"
 
 require "httparty"
 
-
 class Es < AbstractIndexer
   def index(index:, document:)
-   response =  HTTParty.post("http://localhost:9200/#{index}/_doc", body: document, headers:{"Content-Type"=> "application/json"})
-   response.body
+p    doc_id = document[:doc_id]
+    document = document.to_json
+
+    response =  HTTParty.put("http://localhost:9200/#{index}/_doc/#{doc_id}", body: document, headers:{"Content-Type"=> "application/json"})
+
+    response.body
   end
 
-#  def get_document(index:, document_id:)
-#   response = HTTParty.get("http://localhost:9200/#{/_doc", body: document, headers:{"Content-Type"=> "application/json"})
-#   response.body
-#  end
-#XOHQwGwBXhFwQt9P-LzK
-  def search(index:, word:)
-    response = HTTParty.get("http://localhost:9200/#{index}/_search?q=#{word}")
+  def search(index:, phrase:)
+    query = search_query(phrase: phrase)
+p query
+    response =  HTTParty.post(
+      "http://localhost:9200/#{index}/_search",
+       body:    query.to_json,
+       headers: {"Content-Type"=> "application/json"}
+    )
 
-    response =  JSON.parse(response.body)
+     p response =  JSON.parse(response.body)
 
     return "no records found" if response["hits"]["total"] == 0
 
-    return response["hits"]["hits"].map {|hit| hit["_source"].keys[0]}
+    response["hits"]["hits"].map {|hit| hit["_source"].keys[0]}
+    response
+  end
+
+  def search_query(phrase:)
+     #query = {
+     #  query: {
+     #    match_all: {}
+     #  }
+     #}
+    query = {
+      query: {
+        multi_match: {
+          query:    phrase,
+          type:     "best_fields",
+          fields:   ["relevant^3", "body"]
+        # operator: "and"
+        }
+      }
+    }
+  end
+
+  def aggregations
+    {
+    aggs: {
+      type_count: {
+        cardinality: {
+          html: word
+            }
+        }
+    }
+}
   end
 end

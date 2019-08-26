@@ -6,8 +6,7 @@ class RabbitMq < AbstractQueue
   attr_accessor :conn, :q, :x, :ch
 
   def initialize(queue = "america_de_cali")
-p "FROM RABBITMQ"
-p "start"
+p "creating RABBITMQ #{queue}"
      STDOUT.sync = true
 
      @conn = Bunny.new(host:  'localhost',
@@ -29,6 +28,7 @@ p "start"
 
   def subscribe
     @q.subscribe(block: true) do |delivery_info, properties, body|
+      p "woring in subscribe"
       yield at(body)
     end
   end
