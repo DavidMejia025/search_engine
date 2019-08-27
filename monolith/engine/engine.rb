@@ -1,56 +1,69 @@
 require_relative "./indexer/factory_indexer"
-require_relative "./queue/factory_queue"
+require_relative "../queue/factory_queue"
 require_relative "./parser/html_parser"
-require_relative "./web_page/web_page"
-require_relative "./linked_page/linked_page"
+require_relative "./data_structures/web_page"
+require_relative "./data_structures/linked_page"
+require_relative "./indexer/index/index"
+require_relative "../repository/factory_repository"
 
 require 'httparty'
 require "nokogiri"
 
-#data4=
-#  {
-#    doc_id: "3",
-#    html: "2 what if tomorrow is today amd america de cali is the best team in the history",
-#    checksum: "2"
-# }
-#
-def engine
-  repository   = []
-  links_table  = []
-  index        = "testimony"
+class Engine
+  def initialize
+    @repository   = FactoryRepository.create(name: "web_pages")
+    @links_table  = FactoryRepository.create(name: "links_table")
 
-  indexer = FactoryIndexer.create
+    @index   = "testimony6"
+    @indexer = FactoryIndexer.create
 
-  spider_queue = FactoryQueue.create("spider_queue")
+    @spider_queue = FactoryQueue.create("spider_queue")
+    @engine_queue = FactoryQueue.create("engine_queue")
 
-  engine_queue = FactoryQueue.create("engine_queue")
+    p "Engine is Up and Running!!!"
+  end
 
-  spider_queue.enqueue(msg: "http://www.eltiempo.com")
-
-  engine_queue.q.subscribe(block: true) do |delivery_info, properties, body|
+def run
+  @spider_queue.enqueue(msg: "http://www.eltiempo.com")
+p "00000000000            0000000000000000000000               000000000000"
+  @engine_queue.q.subscribe(block: true) do |delivery_info, properties, body|
     web_page =  JSON.parse(body)
+
 p "from spider url"
 p web_page["url"]
 p " url"
 
-p    doc_id = create_doc_id(url: web_page["url"])
+    doc_id = create_doc_id(url: web_page["url"])
 
-    current_web_page = get_from_repository(repository: repository, doc_id: doc_id)
+    current_web_page = @repository.find_record(value: doc_id)
 
     unless current_web_page&.indexed
       html_parsed = parse_html(web_page: web_page)
 
       attributes = {web_page: web_page, doc_id: doc_id, html_parsed: html_parsed}
+p "hola 12345"
+      save_web_page(attributes: attributes)
 
-      save_web_page(repository: repository, links_table: links_table, attributes: attributes)
+      current_web_page = @repository.find_record(value: doc_id)
+# What should be the good practice: encapsulate index in a method or leave as it is here?
+      Index.index_web_page(
+        web_page:   current_web_page,
+        doc_id:     doc_id,
+        attributes: {indexer: @indexer, index: @index}
+      )
 
-      index_web_page(repository: repository, doc_id: doc_id, attributes: {indexer: indexer, index: index})
+      links = add_links_to_repository(links: html_parsed[:links])
 
-      links = add_links_to_repository(repository: repository, links: html_parsed[:links])
+      update_links_table(doc_id: doc_id, links: links)
 
-      update_links_table(links_table: links_table, doc_id: doc_id, links: links)
+      crawl_web(q: @spider_queue, links: links)
+p " Search the db 0000000000000000000000000000000000000000000000000"
+p web_page["url"]
+      j = search_web_pages(query: web_page["url"])
+p  j.first unless j.class == String
 
-      crawl_web(q: spider_queue, repository: repository, links: links)
+p   current_web_page = @repository.find_record(value: j.first).url
+p "searched ............."
     end
   end
 end
@@ -62,7 +75,7 @@ def create_doc_id(url:)
 
   complement_id = str_to_ascii(str: vowels)
 
-  base_id + complement_id
+  @doc_id = base_id + complement_id
 end
 
 def str_to_ascii(str:)
@@ -77,53 +90,34 @@ def parse_html(web_page:)
   new_html = HtmlParser.new(url: web_page["url"], html: web_page["html"]).parse
 end
 
-def update_links_table(links_table:, doc_id:, links:)
-  host = find_or_create_linked_page(links_table: links_table, doc_id: doc_id)
+def update_links_table(links_table: @links_table, doc_id:, links:)
+p  host = @links_table.find_or_create(value: doc_id)
 
   links.each do|link|
-    visitor = find_or_create_linked_page(links_table: links_table, doc_id: link[:doc_id])
+p   visitor = @links_table.find_or_create(value: link[:doc_id])
 
     host.add_out_link(link: link[:doc_id])
-
     visitor.add_in_link(link: doc_id)
   end
 end
 
-def find_or_create_linked_page(links_table:, doc_id:)
-  linked_page = links_table.select {|linked_element| linked_element.doc_id == doc_id}
-
-  return linked_page.first unless linked_page.empty?
-
-  create_linked_page(links_table: links_table, doc_id: doc_id)
-end
-
-def linked_page_exists?(links_table:, doc_id:)
-  links_table.detect {|record| record.doc_id == doc_id} ? true : false
-end
-
-def create_linked_page(links_table:, doc_id:)
-  unless links_table.detect {|record| record.doc_id == doc_id}
-    links_table.push(LinkedPage.new(doc_id: doc_id))
-  end
-
-  links_table.last
-end
-
-def add_to_repository(repository:, element:)
+def add_web_page(element:)
   element.each do|elem|
-    unless repository.detect {|record| record.doc_id == elem[:doc_id]}
-      repository.push(WebPage.new(doc_id: elem[:doc_id], url: elem[:url], html_parsed: elem[:html_parsed]))
+    unless @repository.find_record(value: elem[:doc_id])
+      web_page_element = WebPage.new(
+        doc_id:      elem[:doc_id],
+        url:         elem[:url],
+        html_parsed: elem[:html_parsed]
+      )
+
+p      record = @repository.add(record: web_page_element)
     end
   end
 end
 
-def get_from_repository(repository:, doc_id:)
-  repository.detect {|record| record.doc_id == doc_id}
-end
-
-def crawl_web(q:, repository:, links:)
+def crawl_web(q:, repository: @repository, links:)
   links.each do|link|
-    web_page = get_from_repository(repository: repository, doc_id: link[:doc_id])
+    web_page = @repository.find_record(value: link[:doc_id])
 
     next if web_page.indexed == true
 
@@ -131,38 +125,42 @@ def crawl_web(q:, repository:, links:)
   end
 end
 
-def save_web_page(repository:, links_table:, attributes:)
-  add_to_repository(
-    repository: repository,
+def save_web_page(links_table: @links_table, attributes:)
+  doc_id = attributes[:doc_id]
+
+  add_to_web_page(
     element: [
       {
-        doc_id:      attributes[:doc_id],
+        doc_id:      doc_id,
         url:         attributes[:web_page]["url"],
         html_parsed: attributes[:html_parsed]}
     ]
   )
 
-  create_linked_page(links_table: links_table, doc_id: attributes[:doc_id])
+  unless @links_table.find_record(value: doc_id)
+    linked_page = @links_table.add(record: LinkedPage.new(doc_id: doc_id))
+  end
 end
 
-def index_web_page(repository:, doc_id:, attributes:)
-  current_web_page = get_from_repository(repository: repository, doc_id: doc_id)
+def add_links_to_repository(links:)
+  links = links.map do|link|
+    {
+      doc_id:      create_doc_id(url: link),
+      url:         link,
+      html_parsed: ""
+    }
+  end
 
-  document = current_web_page.create_document
-
-p  attributes[:indexer].index(index: attributes[:index], document: document)
-
-  current_web_page.indexed = true
-end
-
-def add_links_to_repository(repository:, links:)
-  links = links.map{|link| {doc_id: create_doc_id(url: link), url: link, html_parsed: ""}}
-
-  add_to_repository(repository: repository, element: links)
+  add_web_page(element: links)
 
   links
 end
 
-#p  @indexer.search(index: @index, phrase: query)
+def search_web_pages(query:)
+p  @indexer.search(index: @index, phrase: query)
+end
+end
 
-engine
+engine = Engine.new
+
+engine.run

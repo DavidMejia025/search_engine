@@ -1,4 +1,5 @@
 require_relative "abstract_queue"
+
 require          "rubygems"
 require          "bunny"
 

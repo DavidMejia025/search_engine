@@ -1,19 +1,5 @@
 version: '2.2'
 services:
-  eng:
-    image: mono_engine:1
-    build:
-      context: .
-    links:
-      - rabbitmq
-      - elasticsearch
-    networks:
-      - eng
-    ports:
-      - "3000:3000"
-    restart: "on-failure"
-    tty: true
-
   rabbitmq:
     environment:
       - RABBITMQ_ERLANG_COOKIE='secret_cookie'

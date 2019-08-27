@@ -4,21 +4,31 @@ require "httparty"
 
 class Es < AbstractIndexer
   def index(index:, document:)
-    doc_id = document[:doc_id]
+    doc_id   = document[:doc_id]
     document = document.to_json
 
     response =  HTTParty.put(
       "http://localhost:9200/#{index}/_doc/#{doc_id}",
       body:    document,
       headers: {"Content-Type"=> "application/json"}
-    )
+    ).body
 
-    response.body
+    response = JSON.parse(response)
+
+    message = if response["_shards"]["successful"] != 0
+      "Web page #{doc_id} was succesfully indexed into" +
+      "#{response['index']} index"
+    else
+      "Web page #{doc_id} failed to be indexed into" +
+      "#{response['index']}"
+    end
+
+    message
   end
 
   def search(index:, phrase:)
     query = search_query(phrase: phrase)
-p query
+
     response =  HTTParty.post(
       "http://localhost:9200/#{index}/_search",
        body:    query.to_json,
@@ -29,7 +39,6 @@ p query
 
     return "no records found" if response["hits"]["total"] == 0
 
-    p response["hits"]["hits"].map {|hit| hit["_source"].keys}
     response["hits"]["hits"].map {|hit| hit["_source"]["doc_id"]}
   end
 
@@ -44,8 +53,8 @@ p query
         multi_match: {
           query:    phrase,
           type:     "best_fields",
-          fields:   ["relevant^3", "body"]
-        # operator: "and"
+          fields:   ["relevant^3", "body"],
+          operator: "and"
         }
       }
     }

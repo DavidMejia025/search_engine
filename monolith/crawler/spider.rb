@@ -1,4 +1,4 @@
-require_relative "./queue/factory_queue"
+require_relative "../queue/factory_queue"
 
 require "httparty"
 require "nokogiri"
