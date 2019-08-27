@@ -11,14 +11,14 @@ require "nokogiri"
 
 class Engine
   def initialize
-    @repository   = FactoryRepository.create(name: "web_pages")
-    @links_table  = FactoryRepository.create(name: "links_table")
+    @repository   = FactoryRepository.create_web_pages
+    @links_table  = FactoryRepository.create_links_table
 
     @index   = "web_pages"
-    @indexer = FactoryIndexer.create
+    @indexer = FactoryIndexer.create #Still have doubts about sending index name from here...
 
-    @spider_queue = FactoryQueue.create("spider_queue")
-    @engine_queue = FactoryQueue.create("engine_queue")
+    @spider_queue = FactoryQueue.create_spider
+    @engine_queue = FactoryQueue.create_engine
 
     puts  "Engine is Up and Running!!!..................................................................................."
   end

@@ -47,3 +47,6 @@ ENV https_proxy host:port
 
   Network basics types:
     https://docs.docker.com/network/
+
+  Interesting source of docker tips worth to take a close look:
+    https://nickjanetakis.com/blog/docker-tip-45-docker-compose-stop-vs-down

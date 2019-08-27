@@ -1,10 +1,11 @@
+require_relative "../services/logs"
 require_relative "abstract_repository"
 
 class InMemory < AbstractRepository
   attr_accessor :repository, :name
 
   def initialize(name:)
-    create_repository(name:)
+    create_repository(name: name)
   end
 
   def create_repository(name:)
@@ -15,7 +16,7 @@ class InMemory < AbstractRepository
   def add(record:)
     @repository.push(record)
 
-    "repository #{self.name} has a new record"
+    Logs.add(msg: "repository #{self.name} has a new record")
 
     @repository.last
   end

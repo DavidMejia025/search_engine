@@ -1,5 +1,5 @@
 class AbstractQueue
-  def start_conection
+  def start_conection(name:)
     raise "Must override #{__method__}"
   end
 
@@ -8,6 +8,10 @@ class AbstractQueue
   end
 
   def retrieve
+    raise "Must override #{__method__}"
+  end
+
+  def open_connection
     raise "Must override #{__method__}"
   end
 
