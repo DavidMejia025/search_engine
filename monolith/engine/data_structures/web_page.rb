@@ -1,3 +1,5 @@
+require_relative "../../services/logs"
+
 class WebPage
   attr_accessor :indexed, :url, :doc_id, :html_parsed, :page_rank
 
@@ -19,5 +21,7 @@ class WebPage
         body:     @html_parsed[:body]
       }
     end
+
+    document
   end
 end

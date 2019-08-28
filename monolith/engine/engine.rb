@@ -1,3 +1,4 @@
+require_relative "../services/logs/"
 require_relative "./indexer/factory_indexer"
 require_relative "../queue/factory_queue"
 require_relative "./parser/html_parser"
@@ -13,154 +14,175 @@ class Engine
   def initialize
     @repository   = FactoryRepository.create_web_pages
     @links_table  = FactoryRepository.create_links_table
-
-    @index   = "web_pages"
-    @indexer = FactoryIndexer.create #Still have doubts about sending index name from here...
-
+#Still have doubts about sending index name from here...
+    @indexer      = FactoryIndexer.create(index: "web_pages_1") 
     @spider_queue = FactoryQueue.create_spider
     @engine_queue = FactoryQueue.create_engine
 
-    puts  "Engine is Up and Running!!!..................................................................................."
+    Logs.add(msg: "Engine is Up and Running!!!)")
   end
 
   def run
-    @spider_queue.enqueue(msg: "http://www.eltiempo.com")
+    @spider_queue.enqueue(msg: "http://www.marca.com")
+    
+    @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
+      crawler_message = JSON.parse(msg)
+# This links = process smells for me.....      
+      links = process_web_page(crawler_message: JSON.parse(msg))
+      
+      crawl_web(q: @spider_queue, links: links)
 
-    @engine_queue.q.subscribe(block: true) do |delivery_info, properties, body|
-      web_page =  JSON.parse(body)
+      Logs.add(msg: "Query elastic-search with the followin url: #{ crawler_message["url"]}")
 
-      puts "Receiving url:  #{web_page["url"]} from crawler.............................................................."
+      response_doc_id = search_web_pages(query: crawler_message["url"])
 
-      doc_id = create_doc_id(url: web_page["url"])
+      Logs.add(msg: "Response doc id from ES #{response_doc_id}")
+
+      unless response_doc_id == "no records found"
+        current_web_page = @repository.find_record(value: response_doc_id.first).url
+
+        Logs.add(msg: "URL found: #{current_web_page}")
+      end
+
+      sleep 2
+    end
+  end
+  
+  private
+    def process_web_page(crawler_message:)
+      Logs.add(msg: "Receiving url:  #{crawler_message["url"]} from crawler")
+
+      html_parsed = parse_html(web_page: crawler_message)
+      doc_id      = create_doc_id(url: crawler_message["url"])
 
       current_web_page = @repository.find_record(value: doc_id)
+#index is a reserved word? it looks like so
+      unless current_web_page&.indexed   
+        index_web_page(crawler_message: crawler_message, doc_id: doc_id, html_parsed: html_parsed) 
+      end
+#try to pass current web page instead of doc_id thats a better idea or not?
+      update_links(html_parsed: html_parsed, doc_id: doc_id)
+    end
+    
+    def index_web_page(crawler_message:, doc_id:, html_parsed:)
+      attributes  = {web_page: crawler_message, doc_id: doc_id, html_parsed: html_parsed}
+      store_web_page(attributes: attributes)
+#see if this current web page is uneccesary
+      current_web_page      = @repository.find_record(value: doc_id)
+      web_page_idx_template = create_web_page_idx_template(web_page: current_web_page)
 
-      unless current_web_page&.indexed
-        html_parsed = parse_html(web_page: web_page)
+      @indexer.index(document: web_page_idx_template) unless web_page_idx_template == "Failed to create document"
+    end
+#This method could have a better name if you want try guessing something else
+    def update_links(html_parsed:, doc_id:)
+      links = add_links_to_repository(links: html_parsed[:links])
 
-        attributes = {web_page: web_page, doc_id: doc_id, html_parsed: html_parsed}
+      update_links_table(doc_id: doc_id, links: links)
+#Not sure if this is the best way to pass the links to the enqueue or its better to have a memory alocation
+#for current links in links table or something like that, but in that case the traidoff of requestiong or hitting
+# the database multilple times could cound and affect what do you think on this?
+      links
+    end
+    
+    def parse_html(web_page:)
+      new_html = HtmlParser.new(url: web_page["url"], html: web_page["html"]).parse
+    end
 
-        store_web_page(attributes: attributes)
+    def create_doc_id(url:)
+      vowels        = url.scan(/[aeoui]/).join
+      base_id       = str_to_ascii(str: url)
+      complement_id = str_to_ascii(str: vowels)
 
-        current_web_page = @repository.find_record(value: doc_id)
-  # What should be the good practice: encapsulate index in a method or leave as it is here?
-        Index.index_web_page(
-          web_page:   current_web_page,
-          doc_id:     doc_id,
-          attributes: {indexer: @indexer, index: @index}
-        )
+      @doc_id = base_id + complement_id
+    end
 
-        links = add_links_to_repository(links: html_parsed[:links])
+    def str_to_ascii(str:)
+      array = []
+#optimize? with reduce
+      str.each_byte{|ascii| array.push(ascii)}
 
-        update_links_table(doc_id: doc_id, links: links)
+      array.reduce(&:+)
+    end
 
-        crawl_web(q: @spider_queue, links: links)
+    def store_web_page(attributes:)
+      doc_id = attributes[:doc_id]
 
-        puts "Query elastic-search with the followin url: #{ web_page["url"]}................................................"
-puts "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
-puts        response_doc_id = search_web_pages(query: web_page["url"])
+      save_web_page(
+        element: [
+          {
+            doc_id:      doc_id,
+            url:         attributes[:web_page]["url"],
+            html_parsed: attributes[:html_parsed]}
+        ]
+      )
 
-        unless response_doc_id == "no records found"
-          current_web_page = @repository.find_record(value: response_doc_id.first).url
+      unless @links_table.find_record(value: doc_id)
+        linked_page = @links_table.add(record: LinkedPage.new(doc_id: doc_id))
+      end
+    end
 
-          puts "URL found: #{current_web_page} .............................................................................."
+    def create_web_page_idx_template(web_page:)
+      template = web_page.create_document
+
+      return "Failed to create document" unless template
+
+      web_page.indexed = true
+
+      template
+    end
+
+    def save_web_page(element:)
+      element.each do|elem|
+        unless @repository.find_record(value: elem[:doc_id])
+          web_page_element = WebPage.new(
+            doc_id:      elem[:doc_id],
+            url:         elem[:url],
+            html_parsed: elem[:html_parsed]
+          )
+
+          @repository.add(record: web_page_element)
         end
-        sleep 2
       end
     end
-  end
 
-  def create_doc_id(url:)
-    base_id = str_to_ascii(str: url)
-
-    vowels = url.scan(/[aeoui]/).join
-
-    complement_id = str_to_ascii(str: vowels)
-
-    @doc_id = base_id + complement_id
-  end
-
-  def str_to_ascii(str:)
-    array = []
-
-    str.each_byte{|ascii| array.push(ascii)}
-
-    array.reduce(&:+)
-  end
-
-  def parse_html(web_page:)
-    new_html = HtmlParser.new(url: web_page["url"], html: web_page["html"]).parse
-  end
-
-  def update_links_table(links_table: @links_table, doc_id:, links:)
-    host = @links_table.find_or_create(value: doc_id)
-
-    links.each do|link|
-      visitor = @links_table.find_or_create(value: link[:doc_id])
-
-      host.add_out_link(link: link[:doc_id])
-      visitor.add_in_link(link: doc_id)
-    end
-  end
-
-  def crawl_web(q:, repository: @repository, links:)
-    links.each do|link|
-      web_page = @repository.find_record(value: link[:doc_id])
-
-      next if web_page.indexed == true
-
-      q.enqueue(msg: link[:url])
-    end
-  end
-
-  def search_web_pages(query:)
-p   @indexer.search(index: @index, phrase: query)
-  end
-
-  def store_web_page(attributes:)
-    doc_id = attributes[:doc_id]
-
-    save_web_page(
-      element: [
+    def add_links_to_repository(links:)
+      links = links.map do|link|
         {
-          doc_id:      doc_id,
-          url:         attributes[:web_page]["url"],
-          html_parsed: attributes[:html_parsed]}
-      ]
-    )
+          doc_id:      create_doc_id(url: link),
+          url:         link,
+          html_parsed: ""
+        }
+      end
 
-    unless @links_table.find_record(value: doc_id)
-      linked_page = @links_table.add(record: LinkedPage.new(doc_id: doc_id))
-    end
-  end
+      save_web_page(element: links)
 
-  def add_links_to_repository(links:)
-    links = links.map do|link|
-      {
-        doc_id:      create_doc_id(url: link),
-        url:         link,
-        html_parsed: ""
-      }
+      links
     end
 
-    save_web_page(element: links)
+    def update_links_table(links_table: @links_table, doc_id:, links:)
+      host = @links_table.find_or_create(value: doc_id)
 
-    links
-  end
+      links.each do|link|
+        visitor = @links_table.find_or_create(value: link[:doc_id])
 
-  def save_web_page(element:)
-    element.each do|elem|
-      unless @repository.find_record(value: elem[:doc_id])
-        web_page_element = WebPage.new(
-          doc_id:      elem[:doc_id],
-          url:         elem[:url],
-          html_parsed: elem[:html_parsed]
-        )
-
-        @repository.add(record: web_page_element)
+        host.add_out_link(link: link[:doc_id])
+        visitor.add_in_link(link: doc_id)
       end
     end
-  end
+
+    def crawl_web(q:, repository: @repository, links:)
+      links.each do|link|
+        web_page = @repository.find_record(value: link[:doc_id])
+
+        next if web_page.indexed == true
+
+        q.enqueue(msg: link[:url])
+      end
+    end
+
+    def search_web_pages(query:)
+      @indexer.search(phrase: query)
+    end
 end
 
 engine = Engine.new

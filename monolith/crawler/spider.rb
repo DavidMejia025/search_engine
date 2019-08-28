@@ -16,13 +16,8 @@ class Spider
 
       engine_queue.enqueue(msg: {url: url, html: html_content}.to_json)
 
+      Logs.add(msg: "Url: #{url} crawled")
       Logs.add(msg: "Total urls crawled: #{count += 1}")
     end
   end
 end
-
-#Implement singleton
-
-crawler = Spider.new
-
-p crawler.crawl_web_pages

@@ -16,8 +16,6 @@ class InMemory < AbstractRepository
   def add(record:)
     @repository.push(record)
 
-    Logs.add(msg: "repository #{self.name} has a new record")
-
     @repository.last
   end
 

@@ -6,7 +6,7 @@ class Logs
   end
 
   def self.add(msg:)
-    p "Logs: #{msg} #{"." * 100}"
+    puts "Logs: #{msg} #{"." * 100}"
   end
 
   def self.find_create
