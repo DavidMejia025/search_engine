@@ -4,6 +4,10 @@ class InMemory < AbstractRepository
   attr_accessor :repository, :name
 
   def initialize(name:)
+    create_repository(name:)
+  end
+
+  def create_repository(name:)
     @repository = []
     @name       = name
   end

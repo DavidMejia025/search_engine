@@ -1,5 +1,16 @@
 version: '2.2'
+
 services:
+  database:
+    image: "postgres:9"
+    networks:
+      - eng
+    ports:
+      - "5433:5432"
+    volumes:
+       - db-data:/var/lib/postgresql/data
+    restart: "always"
+
   rabbitmq:
     environment:
       - RABBITMQ_ERLANG_COOKIE='secret_cookie'
@@ -38,6 +49,7 @@ networks:
   eng:
 volumes:
   es-data:
+  db-data:
   rabbit1:
     driver: local
 

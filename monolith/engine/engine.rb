@@ -14,24 +14,22 @@ class Engine
     @repository   = FactoryRepository.create(name: "web_pages")
     @links_table  = FactoryRepository.create(name: "links_table")
 
-    @index   = "testimony6"
+    @index   = "web_pages"
     @indexer = FactoryIndexer.create
 
     @spider_queue = FactoryQueue.create("spider_queue")
     @engine_queue = FactoryQueue.create("engine_queue")
 
-    p "Engine is Up and Running!!!"
+    puts  "Engine is Up and Running!!!..................................................................................."
   end
 
   def run
     @spider_queue.enqueue(msg: "http://www.eltiempo.com")
-  p "00000000000            0000000000000000000000               000000000000"
+
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, body|
       web_page =  JSON.parse(body)
 
-  p "from spider url"
-  p web_page["url"]
-  p " url"
+      puts "Receiving url:  #{web_page["url"]} from crawler.............................................................."
 
       doc_id = create_doc_id(url: web_page["url"])
 
@@ -41,8 +39,8 @@ class Engine
         html_parsed = parse_html(web_page: web_page)
 
         attributes = {web_page: web_page, doc_id: doc_id, html_parsed: html_parsed}
-  p "hola 12345"
-        save_web_page(attributes: attributes)
+
+        store_web_page(attributes: attributes)
 
         current_web_page = @repository.find_record(value: doc_id)
   # What should be the good practice: encapsulate index in a method or leave as it is here?
@@ -57,13 +55,17 @@ class Engine
         update_links_table(doc_id: doc_id, links: links)
 
         crawl_web(q: @spider_queue, links: links)
-  p " Search the db 0000000000000000000000000000000000000000000000000"
-  p web_page["url"]
-        j = search_web_pages(query: web_page["url"])
-  p  j.first unless j.class == String
 
-  p   current_web_page = @repository.find_record(value: j.first).url
-  p "searched ............."
+        puts "Query elastic-search with the followin url: #{ web_page["url"]}................................................"
+puts "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+puts        response_doc_id = search_web_pages(query: web_page["url"])
+
+        unless response_doc_id == "no records found"
+          current_web_page = @repository.find_record(value: response_doc_id.first).url
+
+          puts "URL found: #{current_web_page} .............................................................................."
+        end
+        sleep 2
       end
     end
   end
@@ -91,10 +93,10 @@ class Engine
   end
 
   def update_links_table(links_table: @links_table, doc_id:, links:)
-  p  host = @links_table.find_or_create(value: doc_id)
+    host = @links_table.find_or_create(value: doc_id)
 
     links.each do|link|
-  p   visitor = @links_table.find_or_create(value: link[:doc_id])
+      visitor = @links_table.find_or_create(value: link[:doc_id])
 
       host.add_out_link(link: link[:doc_id])
       visitor.add_in_link(link: doc_id)
@@ -112,7 +114,7 @@ class Engine
   end
 
   def search_web_pages(query:)
-  p  @indexer.search(index: @index, phrase: query)
+p   @indexer.search(index: @index, phrase: query)
   end
 
   def store_web_page(attributes:)
@@ -155,7 +157,7 @@ class Engine
           html_parsed: elem[:html_parsed]
         )
 
-  p      record = @repository.add(record: web_page_element)
+        @repository.add(record: web_page_element)
       end
     end
   end
