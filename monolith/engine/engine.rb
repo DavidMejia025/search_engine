@@ -4,7 +4,6 @@ require_relative "../queue/factory_queue"
 require_relative "./parser/html_parser"
 require_relative "./data_structures/web_page"
 require_relative "./data_structures/linked_page"
-require_relative "./indexer/index/index"
 require_relative "../repository/factory_repository"
 
 require 'httparty'
@@ -15,7 +14,7 @@ class Engine
     @repository   = FactoryRepository.create_web_pages
     @links_table  = FactoryRepository.create_links_table
 #Still have doubts about sending index name from here...
-    @indexer      = FactoryIndexer.create(index: "web_pages_1") 
+    @indexer      = FactoryIndexer.create(index: "web_pages_1")
     @spider_queue = FactoryQueue.create_spider
     @engine_queue = FactoryQueue.create_engine
 
@@ -24,12 +23,12 @@ class Engine
 
   def run
     @spider_queue.enqueue(msg: "http://www.marca.com")
-    
+
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
       crawler_message = JSON.parse(msg)
-# This links = process smells for me.....      
+# This links = process smells for me.....
       links = process_web_page(crawler_message: JSON.parse(msg))
-      
+
       crawl_web(q: @spider_queue, links: links)
 
       Logs.add(msg: "Query elastic-search with the followin url: #{ crawler_message["url"]}")
@@ -47,7 +46,7 @@ class Engine
       sleep 2
     end
   end
-  
+
   private
     def process_web_page(crawler_message:)
       Logs.add(msg: "Receiving url:  #{crawler_message["url"]} from crawler")
@@ -57,13 +56,13 @@ class Engine
 
       current_web_page = @repository.find_record(value: doc_id)
 #index is a reserved word? it looks like so
-      unless current_web_page&.indexed   
-        index_web_page(crawler_message: crawler_message, doc_id: doc_id, html_parsed: html_parsed) 
+      unless current_web_page&.indexed
+        index_web_page(crawler_message: crawler_message, doc_id: doc_id, html_parsed: html_parsed)
       end
 #try to pass current web page instead of doc_id thats a better idea or not?
       update_links(html_parsed: html_parsed, doc_id: doc_id)
     end
-    
+
     def index_web_page(crawler_message:, doc_id:, html_parsed:)
       attributes  = {web_page: crawler_message, doc_id: doc_id, html_parsed: html_parsed}
       store_web_page(attributes: attributes)
@@ -83,7 +82,7 @@ class Engine
 # the database multilple times could cound and affect what do you think on this?
       links
     end
-    
+
     def parse_html(web_page:)
       new_html = HtmlParser.new(url: web_page["url"], html: web_page["html"]).parse
     end

@@ -16,9 +16,9 @@ class Es < AbstractIndexer
       "http://localhost:9200/#{@index}/_doc/#{doc_id}",
       body:    document,
       headers: {"Content-Type"=> "application/json"}
-    ).body
+    )
 
-    response = JSON.parse(response)
+    response = JSON.parse(response.body)
 
     Logs.add(msg: index_result_message(response: response, doc_id: doc_id))
   end

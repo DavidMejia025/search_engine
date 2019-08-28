@@ -11,25 +11,7 @@ class RabbitMq < AbstractQueue
     start_conection(name: name)
   end
 
-  def start_conection(name:)
-     Logs.add(msg: "creating new queue (RABBITMQ) #{name}")
-
-     STDOUT.sync = true
-
-     @conn = Bunny.new(host:  'localhost',
-                      port:  '5672',
-                      vhost: '/',
-                      user:  'guest',
-                      pass:  'guest')
-
-     @conn.start
-
-     @ch = @conn.create_channel
-     @q  = @ch.queue(name, auto_delete: true)
-     @x  = @ch.default_exchange
-  end
-
-  def enqueue(msg:)
+ def enqueue(msg:)
     @x.publish(msg, routing_key: @q.name)
   end
 
@@ -45,5 +27,24 @@ class RabbitMq < AbstractQueue
   def close_connection
     @conn.close
   end
+  
+  private
+    def start_conection(name:)
+       Logs.add(msg: "creating new queue (RABBITMQ) #{name}")
+
+       STDOUT.sync = true
+
+       @conn = Bunny.new(host:  'localhost',
+                        port:  '5672',
+                        vhost: '/',
+                        user:  'guest',
+                        pass:  'guest')
+
+       @conn.start
+
+       @ch = @conn.create_channel
+       @q  = @ch.queue(name, auto_delete: true)
+       @x  = @ch.default_exchange
+    end
 end
 
