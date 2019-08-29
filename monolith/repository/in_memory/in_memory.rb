@@ -1,5 +1,5 @@
-require_relative "../services/logs"
-require_relative "abstract_repository"
+require_relative "../../services/logs"
+require_relative "../abstract_repository"
 
 class InMemory < AbstractRepository
   attr_accessor :repository, :name

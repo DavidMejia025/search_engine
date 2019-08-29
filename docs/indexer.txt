@@ -69,3 +69,6 @@ Search engine:
     https://raygun.com/blog/intro-elasticsearchs-awesome-aggregations/
   23 Useful Elasticsearch Example Queries
     https://dzone.com/articles/23-useful-elasticsearch-example-queries
+
+  On docker compose and elastic search examples:
+    https://discuss.elastic.co/t/mapping-elasticsearch-port-with-ports-92xx-9200-in-docker/133359/10

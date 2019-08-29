@@ -139,7 +139,7 @@ class Engine
             html_parsed: elem[:html_parsed]
           )
 
-          @repository.add(record: web_page_element)
+          @repository.add_record(record: web_page_element)
         end
       end
     end

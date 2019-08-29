@@ -1,0 +1,79 @@
+ POSTGRES;
+    [] ? , ?? operator
+    [] -> operator
+    [] table.column syntax
+       It seems to be a way of geting values from n tables but I think it can be done
+       with an join operation.
+
+       SELECT table.column1, table2.column2 FROM table1, table2
+
+    sudo -u postgres -i
+
+    get into psgt console
+      psgt username database
+
+      \? list all comands, \l list dabas, \du list users \dt list of DB \connect DBNAME
+       https://www.postgresql.org/docs/9.6/catalogs.html
+         SELECT * FROM pg_catalog.(table) e.g pg_table, pg_user, pg_roles
+
+      For negotiatus a user postgres with superuser attributes is necessary
+        CREATE USER postgres
+        ALTER postgres WITH SUPERUSER, DBCREATE
+        DROP ROLE postgres
+
+      SQL instructions
+        CREATE table (column TYPE CONSTRAINTS);
+
+        CREATE TABLE table_name (
+          column_name TYPE column_constraint,
+          table_constraint table_constraint
+          ) INHERITS existing_table_name;
+          INSERT INTO table (columns) VALUES (values)
+            do not use ", it throws errors, use ' instead
+
+
+       CREATE TABLE account(
+          user_id serial PRIMARY KEY,
+          username VARCHAR (50) UNIQUE NOT NULL,
+
+word VARCHAR (50) NOT NULL,
+          email VARCHAR (355) UNIQUE NOT NULL,
+          created_on TIMESTAMP NOT NULL,
+          last_login TIMESTAMP
+       );
+
+        SELECT (columns)* FROM table
+        UPDATE table SET column = vallue  WHERE condition;
+
+      Every sentence in psgt must ends with semicolon ;
+       ? is the Postgres JSONB operator to check whether an object contains a given key
+
+     SQL useful examples
+       SELECT "t1"."id"
+       FROM "tasks" AS t1
+
+       SELECT id FROM column
+        WHERE ('SOME_ID' = ANY(SELECT jsonb_array_elements_text(data->'array_with_ids')))
+        limit 1 
+       ;
+
+       STORE SQL RESULT INTO A NEW TABLE
+           create temporary table temp_data2 as (SELECT id FROM (SELECT * FROM organization INNER JOIN leads ON TRUE) as bar );
+           SELECT * INTO new_table FROM other_table( (sql sentence) as some_name
+
+    August28.
+      connect to postgres from a default basic user
+        sudo -u postgres psql
+
+      INSERT FROM table VALUES (val1, val2, val_n), (column1, column2, ... , column_n)
+      Good link with basic info
+        http://www.postgresqltutorial.com/postgresql-list-users/
+
+     All magic is done in RUBY with PG gem. gem install pg
+       http://zetcode.com/db/postgresqlruby/
+         PG::RESULTS
+           https://www.rubydoc.info/gems/pg/PG/Result
+[]       study send sql statment prepare.
+
+        useful link for basic postgres commands.
+          https://chartio.com/resources/tutorials/how-to-list-databases-and-tables-in-postgresql-using-psql/

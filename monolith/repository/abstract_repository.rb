@@ -1,9 +1,13 @@
 class AbstractRepository
+  def establish_connection
+    raise "Must override #{__method__}"
+  end
+# repository should be understud as a db or as a table?
   def create_repository
     raise "Must override #{__method__}"
   end
 
-  def add(record:)
+  def add_record(record:)
     raise "Must override #{__method__}"
   end
 
