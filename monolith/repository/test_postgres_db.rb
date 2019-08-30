@@ -21,11 +21,12 @@ repository = PostgresTest.new
 #puts repository.repository.get_all
 #repository.repository.delete_repository(name: "test3")
 #repository.repository.delete_database(name: "test_aug_29")
-res = repository.repository.raw_sql(sql: "\SELECT * FROM information_schema.tables")
+#res = repository.repository.raw_sql(sql: "\SELECT * FROM information_schema.tables")
 
-tables = res.select{|table| table["table_schema"] == "public"}.map{|row| row["table_name"]}
-p tables
-
-#p repository.repository.find_or_create_table(name: "esp")
-
-p repository.repository.find_or_create_record(field: "id", value: 5)
+#tables = res.select{|table| table["table_schema"] == "public"}.map{|row| row["table_name"]}
+#p tables
+#
+#p repository.repository.find_or_create_table(name: "Omar")
+#
+#p repository.repository.find_or_create_record(field: "id", value: 2)
+p repository.repository.add_record(id: {doc_id: 4}, record: {url: "'www.vamosacaliaveralamechita.com'", html: "'doctype_html2'"})

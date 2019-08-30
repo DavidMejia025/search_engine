@@ -54,7 +54,7 @@ word VARCHAR (50) NOT NULL,
 
        SELECT id FROM column
         WHERE ('SOME_ID' = ANY(SELECT jsonb_array_elements_text(data->'array_with_ids')))
-        limit 1 
+        limit 1
        ;
 
        STORE SQL RESULT INTO A NEW TABLE
@@ -77,3 +77,20 @@ word VARCHAR (50) NOT NULL,
 
         useful link for basic postgres commands.
           https://chartio.com/resources/tutorials/how-to-list-databases-and-tables-in-postgresql-using-psql/
+
+        Add Columns to a Table (Database Engine)
+          Before You Begin
+Limitations and Restrictions
+Using the ALTER TABLE statement to add columns to a table automatically adds those columns to the end of the table. If you want the columns in a specific order in the table, use SQL Server Management Studio. However, note that this is not a database design best practice. Best practice is to specify the order in which the columns are returned at the application and query level. You should not rely on the use of SELECT * to return all columns in an expected order based on the order in which they are defined in the table. Always specify the columns by name in your queries and applications in the order in which you would like them to appear.
+
+Security
+Permissions
+Requires ALTER permission on the table.
+
+         Example:
+             test_3_aug_29=# CREATE TABLE Webpages (doc_id INT PRIMARY KEY, url VARCHAR(250) UNIQUE, html TEXT NULL);
+             INSERT INTO Webpages (doc_id,url) VALUES(4,'www.google2.com');
+             INSERT INTO Omar VALUES(2, 'www.google.com', 'DOCTYPE html');
+
+             PLEASE TAKE INTO ACCOUNT in psql that " are not allowed and strings have to be labled under ' single quotations.
+

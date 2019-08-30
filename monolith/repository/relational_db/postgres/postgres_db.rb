@@ -86,10 +86,12 @@ class PostgresDb
     query("DROP TABLE #{name}")
   end
 
-  def add_record(id:, record:)
-    id = id || raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM cars ORDER BY id DESC LIMIT 1").first["#{PRIMARY_KEY}"]
+  def add_record(id: nil, record:)
+    id = id || {PRIMARY_KEY => raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM #{@table_name} ORDER BY id DESC LIMIT 1").first["#{PRIMARY_KEY}"]}
 
-    query("INSERT INTO cars VALUES  (#{id.to_i + 1}, 'nissan', '200000')")
+     query("INSERT INTO #{@table_name}(#{columns}) VALUES(#{values})")
+
+     query("SELECT * FROM #{@table_name} WHERE #{id.keys.first} = #{id.values.first}")
   end
 
   def get_all
@@ -129,7 +131,7 @@ class PostgresDb
 
     return record unless record[:errors]
 
-    create_record(field: field, values: vaues)
+    add_record(field: field, values: values)
   end
 
   private
