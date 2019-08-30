@@ -2,38 +2,53 @@ require_relative "../../../services/logs"
 require 'pg'
 
 class PostgresDb
-  DB_NAME    = "test_aug_29"
-  TABLE_NAME = "web_repository"
+  DB_NAME     = "test_3_aug_29"
+  TABLE_NAME  = "web_repository"
+  PRIMARY_KEY = "id"
 
   attr_accessor :repository, :name
 
   def initialize(name:)
     connection
     Logs.add(msg: "Connection to Postgress was succesfully establish")
+
     connect_to_db
-    Logs.add(msg: "Connected to db:  #{@db_name}")
+    Logs.add(msg: "Connected to db:  #{DB_NAME}")
+
     @table_name = name || TABLE_NAME
-    create_repository
-    Logs.add(msg: "#{@table_name} is up and running")
+    Logs.add(msg: name)
+
+    find_or_create_table(name: @table_name)
+    Logs.add(msg: "Table #{@table_name} is up and running")
   end
 
   def connection
-    @con = PG.connect(
-      :host => 'localhost',
-      :user => 'postgres',
-      :password => '123pormi',
-    )
+    begin
+      @con = PG.connect(
+        :host => 'localhost',
+        :user => 'postgres',
+        :password => '123pormi',
+      )
+    rescue => e
+      Logs.add(msg: "#{e}")
+    end
   end
+
 #this name: here is an example or application of o/c principle?
   def connect_to_db(name: DB_NAME)
-    @db_name = name
-#   find_or_create_db(db_name:)
-    @con = PG.connect(
-      :host => 'localhost',
-      :user => 'postgres',
-      :password => '123pormi',
-      :dbname => @db_name
-    )
+    begin
+      @con = PG.connect(
+        :host => 'localhost',
+        :user => 'postgres',
+        :password => '123pormi',
+        :dbname => name
+      )
+# Adjust the error only for database not found else log error.
+    rescue => e
+      create_database(name: name)
+
+      connect_to_db
+    end
   end
 
   def db_data
@@ -52,40 +67,73 @@ class PostgresDb
   def raw_sql(sql:)
 #add some password or protection here.
 # see how you send sql to active record"
-    @con.exec(sql)
+    query(sql)
   end
 
   def create_database(name:)
-    @con.exec "CREATE DATABASE #{test_aug_29}"
+    query("CREATE DATABASE #{name}")
+  end
+
+  def delete_database(name:)
+    query("DROP DATABASE #{name}")
   end
 
   def create_repository(name: @table_name)
-    Logs.add(msg: @table_name)
-         #@con.exec "CREATE TABLE Cars(Id INTEGER PRIMARY KEY,
-        #Name VARCHAR(20), Price INT)"
-#    @con.exec "CREATE TABLE #{@table_name}(
-#         docId INTEGER PRIMARY KEY,
-#         url VARCHAR(1440),
-#         html TEXT
-#       )"
+    query("CREATE TABLE #{name}(doc_id INTEGER PRIMARY KEY, url VARCHAR(255), html TEXT)")
   end
 
-  def add_record(record:)
-    @con.exec "INSERT INTO cars VALUES  (2, 'mazda', '200000')"
-
-    res = @con.exec "SELECT * FROM cars"
-    res.each{|row| Logs.add(msg: row)}
+  def delete_repository(name: @table_name)
+    query("DROP TABLE #{name}")
   end
 
-  def find_record
-    raise "Must override #{__method__}"
+  def add_record(id:, record:)
+    id = id || raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM cars ORDER BY id DESC LIMIT 1").first["#{PRIMARY_KEY}"]
+
+    query("INSERT INTO cars VALUES  (#{id.to_i + 1}, 'nissan', '200000')")
+  end
+
+  def get_all
+    query("SELECT * FROM cars")
+  end
+
+  def find_record(value:)
+    query("SELECT * FROM cars WHERE #{PRIMARY_KEY} = 5").first
   end
 
   def find_record_by(field:, value:)
-    raise "Must override #{__method__}"
+    begin
+      query("SELECT * FROM #{@table_name} WHERE #{field} = #{value}")
+    rescue  => e
+      {errors: [{not_found: "record #{value} not found"}]}
+    end
   end
 
-  def find_or_create(value:)
-    raise "Must override #{__method__}"
+#Find or create could not be the best name, what about db_xxx_ exist? and then create?
+  def find_or_create_table(name:)
+    tables = get_table_names
+
+    return Logs.add(msg: "Table #{name} found") if tables.detect{|table| table == name}
+
+    create_repository(name: name)
+    Logs.add(msg: "Table #{name} was created")
   end
+
+  def get_table_names
+   res = raw_sql(sql: "\SELECT * FROM information_schema.tables")
+
+   res.select{|table| table["table_schema"] == "public"}.map{|row| row["table_name"]}
+  end
+
+  def find_or_create_record(field:, value:)
+    record = find_record_by(field: field, value: value)
+
+    return record unless record[:errors]
+
+    create_record(field: field, values: vaues)
+  end
+
+  private
+    def query(sql)
+      @con.exec(sql).map{|row| row}
+    end
 end

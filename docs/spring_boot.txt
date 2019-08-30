@@ -1,0 +1,75 @@
+  Sun microsystems ceo founder 2nd google investor is fun.
+  Oracle now a days based it developemnt in buying start ups.
+  INDEX:
+    https://insights.stackoverflow.com/survey/2019
+    https://www.tiobe.com/tiobe-index/
+    https://www.techrepublic.com/article/the-most-loved-and-most-disliked-programming-languages-revealed-in-stack-overflow-survey/
+  Programing Lenguages:
+    C the father, and c ++ are languages that runs natively in the machine while Java and C# runs on top
+    of virtual machines. Java was developed in Sun microsystems and C# (.net) was created at Microsoft.
+
+
+  Java.
+    Java is a popular (OO)  programing language developed by James Gosling when he was working in SUN Micro systems
+    in 1995.
+
+    On his basic idea Java sounds like the IOT prog language of the time (1990) aim to write an deploy code
+    more easly than C/C++. Their first applications were focused on set-top boxes and televition devices.
+
+    "En 1977, Gosling se licenció en ciencias de la computación por la Universidad de Calgary. En 1983, se doctoró por la Universidad Carnegie Mellon, su tesis doctoral se tituló La manipulación algebraica de las limitaciones. Su director de tesis fue Raj Reddy. Mientras trabajaba para su doctorado, escribió una versión de Emacs (Gosling Emacs), y antes de unirse a Sun Microsystems, construyó una versión multi-procesador de Unix, así como varios compiladores y sistemas de correo.
+
+Desde 1984 James Gosling ha trabajado en la compañía estadounidense Sun Microsystems donde fue vicepresidente hasta que ésta fue comprada por Oracle. Abandonó esta compañía el 2 de abril de 2010."
+
+    https://es.wikipedia.org/wiki/James_Gosling
+
+    Java is a general purpose, high-level programming language developed by Sun Microsystems. The Java programming language was developed by a small team of engineers, known as the Green Team, who initiated the language in 1991. Originally called OAK, the Java language was designed for handheld devices and set-top boxes.
+
+    Java was designed to be easy to use and is therefore much more easy to write, compile, debug, run and learn than other programming languages. This allows you to create modular maintainable applications and reusable cod
+    On his basic idea Java sounds like the IOT prog language of the time (1990) aim to write an deploy code more easly than C/C++
+
+    The advantages of Java are as follows:
+Java is easy to learn. Java was designed to be easy to use and is therefore easy to write, compile, debug, and learn than other programming languages.
+Java is object-oriented. This allows you to create modular programs and reusable code.
+Java is platform-independent.
+         One of the most significant advantages of Java is its ability to move easily from one computer system to another. The ability to run the same program on many different systems is crucial to World Wide Web software, and Java succeeds at this by being platform-independent at both the source and binary levels.
+
+     "While Java is viewed as a programming language to design applications for the Internet, it is in reality a general all purpose language which can be used independent of the Internet."
+
+     History:
+       Since 1995, Java has changed our world . . . and our expectations..
+
+Today, with technology such a part of our daily lives, we take it for granted that we can be connected and access applications and content anywhere, anytime. Because of Java, we expect digital devices to be smarter, more functional, and way more entertaining.
+
+In the early 90s, extending the power of network computing to the activities of everyday life was a radical vision. In 1991, a small group of Sun engineers called the "Green Team" believed that the next wave in computing was the union of digital consumer devices and computers. Led by James Gosling, the team worked around the clock and created the programming language that would revolutionize our world – Java.
+
+The Green Team demonstrated their new language with an interactive, handheld home-entertainment controller that was originally targeted at the digital cable television industry. Unfortunately, the concept was much too advanced for the team at the time. But it was just right for the Internet, which was just starting to take off. In 1995, the team announced that the Netscape Navigator Internet browser would incorporate Java technology.
+
+Today, Java not only permeates the Internet, but also is the invisible force behind many of the applications and devices that power our day-to-day lives. From mobile phones to handheld devices, games and navigation systems to e-business solutions, Java is everywhere!
+
+    https://www.oracle.com/technetwork/java/javase/overview/javahistory-index-198355.html
+
+    " It is intended to let application developers write once, run anywhere (WORA),[17] meaning that compiled Java code can run on all platforms that support Java without the need for recompilation"
+
+      https://www.javatpoint.com/history-of-java
+
+     The first public implementation was Java 1.0 in 1995. It made the promise of "Write Once, Run Anywhere", with free runtimes on popular platforms.
+
+      Philosophy
+
+There were five primary goals in the creation of the Java language:
+
+1. It should use the object-oriented programming methodology.
+2. It should allow the same program to be executed on multiple operating systems.
+3. It should contain built-in support for using computer networks.
+4. It should be designed to execute code from remote sources securely.
+5. It should be easy to use by selecting what was considered the good parts of other object-oriented languages.
+
+To achieve the goals of networking support and remote code execution, Java programmers sometimes find it necessary to use extensions such as CORBA, Internet Communications Engine, or OSGi.
+
+     Good source of History and basic description
+       https://www.freejavaguide.com/history.html
+     Excellent
+       https://www.tecmint.com/what-is-java-a-brief-history-about-java/
+
+
+

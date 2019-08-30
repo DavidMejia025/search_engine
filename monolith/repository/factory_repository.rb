@@ -10,13 +10,13 @@ class FactoryRepository
   def self.create_web_pages
     return InMemory.new(name: "web_pages") if ENVIRONMENT == "test"
 
-    FactoryRelationalDb.create(name: "WebPages")
+    FactoryRelationalDb.create(name: "web_pages")
   end
 
   def self.create_links_table
     return InMemory.new(name: "links_table") if ENVIRONMENT == "test"
 
-    FactoryRelationalDb.create(name: "LinksTable")
+    FactoryRelationalDb.create(name: "links_table")
   end
 
 # Maybe repository is not appropiate for db but for a bucket think about the configuration or setup

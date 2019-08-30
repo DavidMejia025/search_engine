@@ -13,6 +13,10 @@ class InMemory < AbstractRepository
     @name       = name
   end
 
+  def get_all
+    @repository
+  end
+
   def add(record:)
     @repository.push(record)
 

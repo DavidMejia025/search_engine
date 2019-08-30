@@ -11,6 +11,10 @@ class AbstractRepository
     raise "Must override #{__method__}"
   end
 
+  def get_all
+    raise "Must override #{__method__}"
+  end
+
   def find_record
     raise "Must override #{__method__}"
   end
