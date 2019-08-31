@@ -4,12 +4,16 @@ require 'pg'
 class PostgresDb
   DB_NAME     = "test_3_aug_29"
   TABLE_NAME  = "web_repository"
-  PRIMARY_KEY = "id"
+  PRIMARY_KEY = "doc_id"
 
   attr_accessor :repository, :name
+#spring injector spring boot
+
+#Estructura de la base de datos.
 
   def initialize(name:)
-    connection
+#    crear pool de conexiones
+ #   connection
     Logs.add(msg: "Connection to Postgress was succesfully establish")
 
     connect_to_db
@@ -34,7 +38,6 @@ class PostgresDb
     end
   end
 
-#this name: here is an example or application of o/c principle?
   def connect_to_db(name: DB_NAME)
     begin
       @con = PG.connect(
@@ -88,18 +91,36 @@ class PostgresDb
 
   def add_record(id: nil, record:)
     id = id || {PRIMARY_KEY => raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM #{@table_name} ORDER BY id DESC LIMIT 1").first["#{PRIMARY_KEY}"]}
+p record
+    p columns = "#{id.keys.first}, " + record.keys.join(", ")
+    p values = "#{id.values.first}, " + record.values.join(", ")
 
-     query("INSERT INTO #{@table_name}(#{columns}) VALUES(#{values})")
+    query("INSERT INTO #{@table_name}(#{columns}) VALUES(#{values})")
 
-     query("SELECT * FROM #{@table_name} WHERE #{id.keys.first} = #{id.values.first}")
+    query("SELECT * FROM #{@table_name} WHERE #{id.keys.first} = #{id.values.first}")
+  end
+
+  def update_record(record:)
+#Update record requires more work on pasing the record and the values to be updated
+    id = record[PRIMARY_KEY]
+
+    col_val_pairs = record.map do|k,v|
+#Review what happens with the type of objects when db returns a record what happen with the var type.
+      #      v = 'v'  if v.class == String
+      "#{k} = '#{v}'"
+    end.join(", ")
+
+    query("UPDATE #{@table_name} SET #{col_val_pairs} WHERE #{PRIMARY_KEY} = #{id} RETURNING #{record.keys.join(', ')}")
+
+    query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{id}")
   end
 
   def get_all
-    query("SELECT * FROM cars")
+    query("SELECT * FROM #{@table_name}")
   end
 
   def find_record(value:)
-    query("SELECT * FROM cars WHERE #{PRIMARY_KEY} = 5").first
+    query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{value} LIMIT 1").first
   end
 
   def find_record_by(field:, value:)

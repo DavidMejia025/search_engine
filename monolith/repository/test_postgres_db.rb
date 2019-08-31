@@ -14,8 +14,10 @@ repository = PostgresTest.new
 
 
 #puts repository.repository.get_all
-#repository.repository.raw_sql(sql: "SELECT * FROM cars")
-#repository.repository.find_record(value: 5)
+repository.repository.raw_sql(sql: "SELECT * FROM web_pages")
+puts record = repository.repository.find_record(value: 3)
+puts repository.repository.update_record(record: {"doc_id" => 3, html: "doctype_html working and yeahh"})
+puts record = repository.repository.find_record(value: 3)
 #repository.repository.find_record_by(field: "id", value: 5)
 #repository.repository.add_record(record: "2")
 #puts repository.repository.get_all
@@ -29,4 +31,4 @@ repository = PostgresTest.new
 #p repository.repository.find_or_create_table(name: "Omar")
 #
 #p repository.repository.find_or_create_record(field: "id", value: 2)
-p repository.repository.add_record(id: {doc_id: 4}, record: {url: "'www.vamosacaliaveralamechita.com'", html: "'doctype_html2'"})
+#p repository.repository.add_record(id: {doc_id: 5}, record: {url: "'www.vamosacaliaveralamechita.com'", html: "'doctype_html2'"})
