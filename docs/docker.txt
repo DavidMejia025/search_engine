@@ -49,4 +49,8 @@ ENV https_proxy host:port
     https://docs.docker.com/network/
 
   Interesting source of docker tips worth to take a close look:
-    https://nickjanetakis.com/blog/docker-tip-45-docker-compose-stop-vs-down
+    https://nickjanetakis.com/blog/docker-tip-45-docker-compose-stop-vs-downw
+
+
+    DOCKER + POSTGRES
+      https://medium.com/better-programming/connect-from-local-machine-to-postgresql-docker-container-f785f00461a7

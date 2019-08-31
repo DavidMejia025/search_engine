@@ -1,9 +1,5 @@
 require_relative "../../services/logs"
 
-#orm tiene objetos y los pasa a base de datos.
-
-#$dao
-
 class WebPage
   attr_accessor :indexed, :url, :doc_id, :html_parsed, :page_rank
 

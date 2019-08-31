@@ -13,7 +13,7 @@ class Engine
   def initialize
     @repository   = FactoryRepository.create_web_pages
     @links_table  = FactoryRepository.create_links_table
-#Still have doubts about sending index name from here...
+#Still have some doubts about sending index name from here...
     @indexer      = FactoryIndexer.create(index: "web_pages_1")
     @spider_queue = FactoryQueue.create_spider
     @engine_queue = FactoryQueue.create_engine
@@ -26,7 +26,7 @@ class Engine
 
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
       crawler_message = JSON.parse(msg)
-# This links = process smells for me.....
+# This (links = process) smells for me.....
       links = process_web_page(crawler_message: JSON.parse(msg))
 
       crawl_web(q: @spider_queue, links: links)
@@ -36,7 +36,7 @@ class Engine
       response_doc_id = search_web_pages(query: crawler_message["url"])
 
       Logs.add(msg: "Response doc id from ES #{response_doc_id}")
-
+#this is client part
       unless response_doc_id == "no records found"
         current_web_page = @repository.find(response_doc_id.first).url
 
@@ -53,14 +53,13 @@ class Engine
 
       html_parsed = parse_html(web_page: crawler_message)
       doc_id      = create_doc_id(url: crawler_message["url"])
-puts @repository
+
       current_web_page = @repository.find(doc_id)
 
-#index is a reserved word? it looks like so
       unless current_web_page&.indexed
         index_web_page(crawler_message: crawler_message, doc_id: doc_id, html_parsed: html_parsed)
       end
-#try to pass current web page instead of doc_id thats a better idea or not?
+
       update_links(html_parsed: html_parsed, doc_id: doc_id)
     end
 
@@ -74,7 +73,7 @@ puts @repository
 
       @indexer.index(document: web_page_idx_template) unless web_page_idx_template == "Failed to create document"
     end
-#This method could have a better name if you want try guessing something else
+#This method could have a better name if you want please try guessing something else
     def update_links(html_parsed:, doc_id:)
       links = add_links_to_repository(links: html_parsed[:links])
 

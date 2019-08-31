@@ -1,6 +1,6 @@
 require_relative "../../../services/logs"
 require 'pg'
-#THink on how to handle errors at wich level...
+#THink on how to handle errors, at wich level...
 class PostgresDb
   DB_NAME     = "search_engine_test"
   TABLE_NAME  = "test"
@@ -9,7 +9,7 @@ class PostgresDb
   attr_accessor :repository, :name
 
   def initialize(name:)
-    connection
+    establish_connection
     Logs.add(msg: "Connection to Postgress was succesfully establish")
 
     connect_to_db
@@ -40,10 +40,9 @@ class PostgresDb
   end
 
   def add(id: nil, record:)
-    puts record
     id = id || record[:doc_id] || {PRIMARY_KEY => raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM #{@table_name} ORDER BY #{PRIMARY_KEY} DESC LIMIT 1").first["#{PRIMARY_KEY}"]}
 
-    columns = "#{id.keys.first}, " + record.keys.join(", ")
+    columns = "#{id.keys.first}, "   + record.keys.join(", ")
     values  = "#{id.values.first}, " + record.values.join(", ")
 
     query("INSERT INTO #{@table_name}(#{columns}) VALUES(#{values})")
@@ -78,7 +77,6 @@ class PostgresDb
     end
   end
 
-#Find or create could not be the best name, what about db_xxx_ exist? and then create?
   def find_or_create_table(name:)
     tables = get_table_names
 
@@ -97,7 +95,7 @@ class PostgresDb
   end
 
   private
-    def connection
+    def establish_connection
       begin
         @con = PG.connect(
           :host => 'localhost',
@@ -117,7 +115,7 @@ class PostgresDb
           :password => '123pormi',
           :dbname => name
         )
-  # Adjust the error only for database not found else log error.
+# Adjust the error only for database not found else log error.
       rescue => e
         create_database(name: name)
 
@@ -139,7 +137,7 @@ class PostgresDb
     end
     
     def create_database(name:)
-       query("CREATE DATABASE #{name}")
+      query("CREATE DATABASE #{name}")
     end
 
     def delete_database(name:)

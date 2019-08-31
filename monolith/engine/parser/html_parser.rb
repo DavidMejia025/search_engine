@@ -1,6 +1,6 @@
 class HtmlParser
 # Is this a data structure just because it can and really gets instantiated?
-# or just a service complementary chunks of corde. Compare with Web page 
+# or just a SERVICE(which should go into service folder?) complementary chunks of corde. Compare with Web page 
 # or lined page.
 
   def initialize(url:, html:)
