@@ -23,19 +23,21 @@ class InMemory < AbstractRepository
     @repository.last
   end
 
-  def find_record(value:)
-    @repository.detect {|record| record.doc_id == value}
+  def find(value)
+    @repository.detect do|record|
+      record.doc_id == value
+    end
+  end
+  #this method should be implememnted with_by but for now I leave it without by.
+  def find_or_create(doc_id:, record:)
+    element = self.find(value: doc_id)
+
+    return record unless element.nil?
+
+    self.add(record: record)
   end
 
-  def find_or_create(value:)
-    record = self.find_record(value: value)
-
-    return record unless record.nil?
-
-    self.add(record: LinkedPage.new(doc_id: value))
-  end
-
-  def find_record_by(field:, value:)
+  def find_by(field:, value:)
 #Recap how to get a record from field
     @repository.select {|record| record.field == value}
   end

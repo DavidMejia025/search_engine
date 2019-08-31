@@ -18,11 +18,11 @@ class Engine
     @spider_queue = FactoryQueue.create_spider
     @engine_queue = FactoryQueue.create_engine
 
-    Logs.add(msg: "Engine is Up and Running!!!)")
+    Logs.add(msg: "Engine is Up and Running!!!")
   end
 
   def run
-    @spider_queue.enqueue(msg: "http://www.marca.com")
+    @spider_queue.enqueue(msg: "http://www.makeitreal.camp")
 
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
       crawler_message = JSON.parse(msg)
@@ -38,7 +38,7 @@ class Engine
       Logs.add(msg: "Response doc id from ES #{response_doc_id}")
 
       unless response_doc_id == "no records found"
-        current_web_page = @repository.find_record(value: response_doc_id.first).url
+        current_web_page = @repository.find(response_doc_id.first).url
 
         Logs.add(msg: "URL found: #{current_web_page}")
       end
@@ -53,8 +53,9 @@ class Engine
 
       html_parsed = parse_html(web_page: crawler_message)
       doc_id      = create_doc_id(url: crawler_message["url"])
+puts @repository
+      current_web_page = @repository.find(doc_id)
 
-      current_web_page = @repository.find_record(value: doc_id)
 #index is a reserved word? it looks like so
       unless current_web_page&.indexed
         index_web_page(crawler_message: crawler_message, doc_id: doc_id, html_parsed: html_parsed)
@@ -67,7 +68,8 @@ class Engine
       attributes  = {web_page: crawler_message, doc_id: doc_id, html_parsed: html_parsed}
       store_web_page(attributes: attributes)
 #see if this current web page is uneccesary
-      current_web_page      = @repository.find_record(value: doc_id)
+      current_web_page      = @repository.find(doc_id)
+
       web_page_idx_template = create_web_page_idx_template(web_page: current_web_page)
 
       @indexer.index(document: web_page_idx_template) unless web_page_idx_template == "Failed to create document"
@@ -111,11 +113,12 @@ class Engine
           {
             doc_id:      doc_id,
             url:         attributes[:web_page]["url"],
-            html_parsed: attributes[:html_parsed]}
+            html_parsed: attributes[:html_parsed]
+          }
         ]
       )
 
-      unless @links_table.find_record(value: doc_id)
+      unless @links_table.find(value: doc_id)
         linked_page = @links_table.add(record: LinkedPage.new(doc_id: doc_id))
       end
     end
@@ -132,14 +135,14 @@ class Engine
 
     def save_web_page(element:)
       element.each do|elem|
-        unless @repository.find_record(value: elem[:doc_id])
+        unless @repository.find(elem[:doc_id])
           web_page_element = WebPage.new(
             doc_id:      elem[:doc_id],
             url:         elem[:url],
             html_parsed: elem[:html_parsed]
           )
 
-          @repository.add_record(record: web_page_element)
+          @repository.add(record: web_page_element)
         end
       end
     end
@@ -159,10 +162,10 @@ class Engine
     end
 
     def update_links_table(links_table: @links_table, doc_id:, links:)
-      host = @links_table.find_or_create(value: doc_id)
+      host = @links_table.find_or_create(doc_id: doc_id, record: LinkedPage.new(doc_id: doc_id))
 
       links.each do|link|
-        visitor = @links_table.find_or_create(value: link[:doc_id])
+        visitor = @links_table.find_or_create(doc_id: link[:doc_id], record: LinkedPage.new(doc_id: doc_id))
 
         host.add_out_link(link: link[:doc_id])
         visitor.add_in_link(link: doc_id)
@@ -171,7 +174,7 @@ class Engine
 
     def crawl_web(q:, repository: @repository, links:)
       links.each do|link|
-        web_page = @repository.find_record(value: link[:doc_id])
+        web_page = @repository.find(link[:doc_id])
 
         next if web_page.indexed == true
 

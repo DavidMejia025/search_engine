@@ -7,7 +7,7 @@ class AbstractRepository
     raise "Must override #{__method__}"
   end
 
-  def add_record(record:)
+  def add(record:)
     raise "Must override #{__method__}"
   end
 
@@ -15,15 +15,15 @@ class AbstractRepository
     raise "Must override #{__method__}"
   end
 
-  def find_record
+  def find(value)
     raise "Must override #{__method__}"
   end
 
-  def find_record_by(field:, value:)
+  def find_by(field:, value:)
     raise "Must override #{__method__}"
   end
 
-  def find_or_create(value:)
+  def find_or_create(doc_id:, record:)
     raise "Must override #{__method__}"
   end
 
