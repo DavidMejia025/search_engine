@@ -23,10 +23,21 @@ class InMemory < AbstractRepository
     @repository.last
   end
 
-  def find(value)
-    @repository.detect do|record|
-      record.doc_id == value
+  def update(record:)
+puts "#{@repository} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
+puts "#{record} ............................................... 5464576547567m ......................."
+    record.each do|k, v|
+      @repository[k] = v
     end
+puts "#{@repository} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
+  end
+
+  def find(value)
+    record = @repository.detect do|record|
+      record[:doc_id] == value
+    end
+
+    record
   end
   #this method should be implememnted with_by but for now I leave it without by.
   def find_or_create(doc_id:, record:)

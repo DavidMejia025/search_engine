@@ -30,16 +30,14 @@ class Engine
       links = process_web_page(crawler_message: JSON.parse(msg))
 
       crawl_web(q: @spider_queue, links: links)
-
+#this is client part
       Logs.add(msg: "Query elastic-search with the followin url: #{ crawler_message["url"]}")
 
       response_doc_id = search_web_pages(query: crawler_message["url"])
-
       Logs.add(msg: "Response doc id from ES #{response_doc_id}")
-#this is client part
+
       unless response_doc_id == "no records found"
         current_web_page = @repository.find(response_doc_id.first).url
-
         Logs.add(msg: "URL found: #{current_web_page}")
       end
 
@@ -64,10 +62,19 @@ class Engine
     end
 
     def index_web_page(crawler_message:, doc_id:, html_parsed:)
-      attributes  = {web_page: crawler_message, doc_id: doc_id, html_parsed: html_parsed}
-      store_web_page(attributes: attributes)
+      element = [
+        {
+          doc_id:      doc_id,
+          url:         crawler_message["url"],
+          html_parsed: html_parsed
+        }
+      ]
+      
+      save_web_page(element: element)
+      #store_web_page(attributes: attributes)
 #see if this current web page is uneccesary
-      current_web_page      = @repository.find(doc_id)
+      current_web_page = @repository.find(doc_id)
+puts "#{current_web_page.class} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
 
       web_page_idx_template = create_web_page_idx_template(web_page: current_web_page)
 
@@ -104,50 +111,57 @@ class Engine
       array.reduce(&:+)
     end
 
-    def store_web_page(attributes:)
-      doc_id = attributes[:doc_id]
-
-      save_web_page(
-        element: [
-          {
-            doc_id:      doc_id,
-            url:         attributes[:web_page]["url"],
-            html_parsed: attributes[:html_parsed]
-          }
-        ]
-      )
-
-      unless @links_table.find(value: doc_id)
-        linked_page = @links_table.add(record: LinkedPage.new(doc_id: doc_id))
-      end
-    end
-
     def create_web_page_idx_template(web_page:)
+ puts "#{web_page.keys} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
+     
       template = web_page.create_document
 
       return "Failed to create document" unless template
 
-      web_page.indexed = true
+      web_page.update(record: {indexed: true})
 
       template
     end
-
+#Element is not a very good name needs to be renamed 
     def save_web_page(element:)
       element.each do|elem|
-        unless @repository.find(elem[:doc_id])
+        doc_id = elem[:doc_id]
+
+        unless @repository.find(doc_id)
           web_page_element = WebPage.new(
-            doc_id:      elem[:doc_id],
+            doc_id:      doc_id,
             url:         elem[:url],
             html_parsed: elem[:html_parsed]
           )
 
-          @repository.add(record: web_page_element)
+          @repository.add(
+            record: {
+              doc_id:      web_page_element.doc_id,
+              url:         web_page_element.url,
+              html_parsed: web_page_element.html_parsed
+            }
+          )
+
+          unless @links_table.find(value: doc_id)
+            linked_page = LinkedPage.new(doc_id: doc_id)
+            save_links(
+              element: {
+                doc_id:    linked_page.doc_id,
+                in_links:  linked_page.in_links,
+                out_links: linked_page.out_links
+              }
+            )
+          end
         end
       end
     end
 
+    def save_links(element:)
+       @links_table.add(record: element)
+    end
+
     def add_links_to_repository(links:)
-      links = links.map do|link|
+      web_pages = links.map do|link|
         {
           doc_id:      create_doc_id(url: link),
           url:         link,
@@ -155,7 +169,7 @@ class Engine
         }
       end
 
-      save_web_page(element: links)
+      save_web_page(element: web_pages)
 
       links
     end

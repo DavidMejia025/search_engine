@@ -2,8 +2,8 @@ require_relative "in_memory/in_memory"
 require_relative "relational_db/factory_relational_db"
 
 class FactoryRepository
-  #ENVIRONMENT = "test"
-  ENVIRONMENT = "dev"
+  ENVIRONMENT = "test"
+  #ENVIRONMENT = "dev"
   # the beheavior of the in memory is sightly different from the relational db. For example
   # in memory is a single bucket while a db can have multiple tables there should be a way to
   # take this into account. To think deeply later after finishing to implement postgress integration.
