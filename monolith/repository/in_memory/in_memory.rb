@@ -24,9 +24,7 @@ class InMemory < AbstractRepository
   end
 
   def update(record:, attributes:)
-    p attributes
-    p"333"
-    p in_memory_record = self.repository.select {|record| record == record}.first
+    in_memory_record = self.repository.select {|record| record == record}.first
 
     attributes.each do|k, v|
       in_memory_record[k] = v
@@ -60,6 +58,7 @@ class InMemory < AbstractRepository
 #
 #    self.add(record: record)
 #  end
+
   def find_or_create_by(field:, record:)
     element = self.find_by(field: field, value: record[field])
 

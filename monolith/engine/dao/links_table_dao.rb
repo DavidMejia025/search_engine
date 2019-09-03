@@ -11,12 +11,10 @@ class LinksTableDao
   end
 
   def update(record:, attributes:)
-    p "1234567890"
-    p record
-    p hash = from_instance_to_hash(record)
-p    web_page_data = @repository.update(record: hash, attributes: attributes)
-p "poioplkjiop"
-     linked_page = instance_web_page(web_page_data)
+    hash = from_instance_to_hash(record)
+    web_page_data = @repository.update(record: hash, attributes: attributes)
+
+    linked_page = instance_web_page(web_page_data)
   end
 
   def get_all
@@ -28,7 +26,7 @@ p "poioplkjiop"
   end
 
   def find_by(field:, value:)
-    p web_pages_data = @repository.find_by(field: field, value: value)
+    web_pages_data = @repository.find_by(field: field, value: value)
 
     web_pages_data.map do|web_page_data|
       instance_web_page(web_page_data)
@@ -40,9 +38,9 @@ p "poioplkjiop"
  # end
 
   def find_or_create_by(field:, record:)
-p     web_page_data = @repository.find_or_create_by(field: field, record: record)
+    web_page_data = @repository.find_or_create_by(field: field, record: record)
 
-     instance_web_page(web_page_data)
+    instance_web_page(web_page_data)
   end
 
    def instance_web_page(data)
@@ -53,7 +51,9 @@ p     web_page_data = @repository.find_or_create_by(field: field, record: record
      )
      
      attributes.each do|attrb| 
-       linked_page.send("#{attrb}=", data[attrb])
+        next unless data[attrb]
+          
+        linked_page.send("#{attrb}=", data[attrb])
      end
 
      linked_page

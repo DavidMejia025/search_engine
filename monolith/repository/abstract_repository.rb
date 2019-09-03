@@ -19,7 +19,7 @@ class AbstractRepository
     raise "Must override #{__method__}"
   end
 
-  #find_by_primary_key
+  #find_by_primary_key?  what happens in the In memory case
   def find(value)
     raise "Must override #{__method__}"
   end

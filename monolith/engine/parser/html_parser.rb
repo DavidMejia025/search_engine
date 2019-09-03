@@ -9,7 +9,11 @@ class HtmlParser
   end
 
   def parse
-    {relevant: relevant, body: body, links: get_links}
+    {
+      relevant: relevant,
+      body:     body,
+      links:    get_links
+    }
   end
 
   def relevant
@@ -21,11 +25,13 @@ class HtmlParser
 
     url = @url.split(/[.,\/]/).join(" ")
 
-    meta + " " +  titles + " " + url
+    result = meta + " " +  titles + " " + url
+
+    result = result.to_s.gsub("'","@").gsub('"',"@@")
   end
 
   def body
-    @html.search("body").to_s
+    result = @html.search("body").to_s.gsub("'","@").gsub('"',"@@")
   end
 
 # review this code re looking at it it smells ...

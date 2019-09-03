@@ -1,5 +1,5 @@
 require_relative "factory_repository"
-
+# This file needs to be cleaned up
 class PostgresTest
   attr_accessor :repository
   def initialize
@@ -48,15 +48,15 @@ p repository = FactoryRelationalDb.create(name: "web_pages")
 
 #p repository.add(record: {doc_id: 126, url: "'www.google.com'", html_parsed: "'doctype html'"})
 
-p repository.get_all
+ repository.get_all
 
 #p record = repository.find(123)
 
-p record = repository.find_by(field: :doc_id, value: 124).first
-p record.class
-p repository.update(record: record, attributes: {"doc_id" => 112})
+#p record = repository.find_by(field: :doc_id, value: 124).first
+#p# record.class
+#p repository.update(record: record, attributes: {"doc_id" => 112})
 
-p repository.find_or_create_by(field: :doc_id, record: {doc_id:  112})
+#p repository.find_or_create_by(field: :doc_id, record: {doc_id:  112})
 #
 #p "Repository should contains only one element"
 #p repository.get_all
