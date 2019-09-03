@@ -10,17 +10,21 @@ p repository.get_all
 
 #p record = repository.find(123)
 
-p record = repository.find_by(field: :doc_id, value: 123)
+p record = repository.find_by(field: :doc_id, value: 123).first
+p record.class
+p repository.update(record: record, attributes: {doc_id:  112})
 
-p record.first.update({doc_id: 124})
-
-p repository.find_or_create_by(field: :doc_id, record: {doc_id: 124})
-
-p "Repository should contains only one element"
 p repository.get_all
 
-p repository.find_or_create_by(field: :doc_id, record: {doc_id: 127})
+#p repository.find_or_create_by(field: :doc_id, record: {doc_id:  112})
 
-p "Repository should contains two  elements"
-p repository.get_all
+#p repository.find_or_create_by(field: :doc_id, record: {doc_id: 124})
+
+#p "Repository should contains only one element"
+#p repository.get_all
+
+#p repository.find_or_create_by(field: :doc_id, record: {doc_id: 127})
+
+#p "Repository should contains two  elements"
+#p repository.get_all
 

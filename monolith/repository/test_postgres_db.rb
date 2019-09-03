@@ -48,15 +48,15 @@ p repository = FactoryRelationalDb.create(name: "web_pages")
 
 #p repository.add(record: {doc_id: 126, url: "'www.google.com'", html_parsed: "'doctype html'"})
 
-#p repository.get_all
+p repository.get_all
 
 #p record = repository.find(123)
 
-p record = repository.find_by(field: :doc_id, value: 123)
+p record = repository.find_by(field: :doc_id, value: 124).first
+p record.class
+p repository.update(record: record, attributes: {"doc_id" => 112})
 
-#p record.first.update({"doc_id" => 128})
-
-p repository.find_or_create_by(field: :doc_id, record: {doc_id:  136})
+p repository.find_or_create_by(field: :doc_id, record: {doc_id:  112})
 #
 #p "Repository should contains only one element"
 #p repository.get_all

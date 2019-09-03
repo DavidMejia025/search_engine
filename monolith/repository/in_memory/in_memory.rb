@@ -23,14 +23,16 @@ class InMemory < AbstractRepository
     self.repository.last
   end
 
-  def update(attributes:)
+  def update(record:, attributes:)
     p attributes
     p"333"
+    p in_memory_record = self.repository.select {|record| record == record}.first
+
     attributes.each do|k, v|
-      self.send("#{k}=", v)
+      in_memory_record[k] = v
     end
 
-    self
+    in_memory_record
   end
 # this should be the way given the way it is  implemented as array but ....
   def find(value)

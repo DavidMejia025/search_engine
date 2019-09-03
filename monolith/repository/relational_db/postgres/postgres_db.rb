@@ -51,19 +51,23 @@ class PostgresDb
     query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{id}").first
   end
 
-  def update(attributes:)
-#Update record requires more work on pasing the record and the values to be updated
-    id = record[PRIMARY_KEY]
-
-    col_val_pairs = record.map do|k,v|
+  def update(record:, attributes:)
+# Update record requires more work on pasing the record and the values to be updated
+# This smeells a lot should be fixed with with_indifirent acces"
+   p id = record[PRIMARY_KEY] || record[PRIMARY_KEY.to_s]
+    
+     col_val_pairs = attributes.map do|k,v| 
 #Review what happens with the type of objects when db returns a record what happen with the var type.
       #      v = 'v'  if v.class == String
-      "#{k} = '#{v}'"
+      "#{k} = #{v}"
     end.join(", ")
+p col_val_pairs 
+    query("UPDATE #{@table_name} SET #{col_val_pairs} WHERE #{PRIMARY_KEY} = #{id}")
 
-    query("UPDATE #{@table_name} SET #{col_val_pairs} WHERE #{PRIMARY_KEY} = #{id} RETURNING #{record.keys.join(', ')}")
+# RETURNING record.keys.join(', ')}"
+    updated_id = attributes[PRIMARY_KEY] || attributes[PRIMARY_KEY.to_s]
 
-    query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{id}")
+    query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{updated_id}").first
   end
 
   def find(value)
@@ -98,7 +102,7 @@ class PostgresDb
   def find_or_create_by(field:, record:)
     element = find_by(field: field, value: record[field])
 
-    return element unless element.empty?
+    return element.first unless element.empty?
 
     add(record: record)
   end
