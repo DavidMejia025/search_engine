@@ -61,11 +61,13 @@ class PostgresDb
       #      v = 'v'  if v.class == String
       "#{k} = #{v}"
     end.join(", ")
-p col_val_pairs 
+p col_val_pairs
+
     query("UPDATE #{@table_name} SET #{col_val_pairs} WHERE #{PRIMARY_KEY} = #{id}")
 
-# RETURNING record.keys.join(', ')}"
     updated_id = attributes[PRIMARY_KEY] || attributes[PRIMARY_KEY.to_s]
+
+    updated_id = id unless updated_id
 
     query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{updated_id}").first
   end
