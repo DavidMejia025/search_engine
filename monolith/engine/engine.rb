@@ -22,6 +22,7 @@ class Engine
   end
 
   def run
+    return true
     @spider_queue.enqueue(msg: "http://www.makeitreal.camp")
 
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
@@ -47,7 +48,7 @@ class Engine
 
   private
     def process_web_page(crawler_message:)
-      Logs.add(msg: "Receiving url:  #{crawler_message["url"]} from crawler")
+      Logs.add(msg: "Receiving url: #{crawler_message["url"]} from crawler")
 
       html_parsed = parse_html(web_page: crawler_message)
       doc_id      = create_doc_id(url: crawler_message["url"])
@@ -74,7 +75,6 @@ class Engine
       #store_web_page(attributes: attributes)
 #see if this current web page is uneccesary
       current_web_page = @repository.find(doc_id)
-puts "#{current_web_page.class} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
 
       web_page_idx_template = create_web_page_idx_template(web_page: current_web_page)
 
@@ -112,13 +112,11 @@ puts "#{current_web_page.class} .............fgdsgdsgdsg sg sdf gsd s dg .......
     end
 
     def create_web_page_idx_template(web_page:)
- puts "#{web_page.keys} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
-     
       template = web_page.create_document
 
       return "Failed to create document" unless template
 
-      web_page.update(record: {indexed: true})
+      @repository.update(record: web_page, attributes: {indexed: true})
 
       template
     end
@@ -134,30 +132,18 @@ puts "#{current_web_page.class} .............fgdsgdsgdsg sg sdf gsd s dg .......
             html_parsed: elem[:html_parsed]
           )
 
-          @repository.add(
-            record: {
-              doc_id:      web_page_element.doc_id,
-              url:         web_page_element.url,
-              html_parsed: web_page_element.html_parsed
-            }
-          )
+          @repository.add(record: web_page_element)
 
-          unless @links_table.find(value: doc_id)
+          unless @links_table.find(doc_id)
             linked_page = LinkedPage.new(doc_id: doc_id)
-            save_links(
-              element: {
-                doc_id:    linked_page.doc_id,
-                in_links:  linked_page.in_links,
-                out_links: linked_page.out_links
-              }
-            )
+            save_links(record: linked_page)
           end
         end
       end
     end
 
-    def save_links(element:)
-       @links_table.add(record: element)
+    def save_links(record:)
+       @links_table.add(record: record)
     end
 
     def add_links_to_repository(links:)
@@ -178,20 +164,24 @@ puts "#{current_web_page.class} .............fgdsgdsgdsg sg sdf gsd s dg .......
       host = @links_table.find_or_create(doc_id: doc_id, record: LinkedPage.new(doc_id: doc_id))
 
       links.each do|link|
-        visitor = @links_table.find_or_create(doc_id: link[:doc_id], record: LinkedPage.new(doc_id: doc_id))
+        link_doc_id = create_doc_id(url: link)
 
-        host.add_out_link(link: link[:doc_id])
-        visitor.add_in_link(link: doc_id)
+        visitor = @links_table.find_or_create(doc_id: link_doc_id, record: LinkedPage.new(doc_id: link_doc_id))
+
+        host.add_out_link(link: link_doc_id)
+        visitor.add_in_link(link: host.doc_id)
       end
     end
 
-    def crawl_web(q:, repository: @repository, links:)
+    def crawl_web(q:, links:)
       links.each do|link|
-        web_page = @repository.find(link[:doc_id])
+        link_doc_id = create_doc_id(url: link)
+
+        web_page = @repository.find(link_doc_id )
 
         next if web_page.indexed == true
 
-        q.enqueue(msg: link[:url])
+        q.enqueue(msg: link)
       end
     end
 

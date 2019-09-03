@@ -4,7 +4,7 @@ require 'pg'
 class PostgresDb
   DB_NAME     = "search_engine_test"
   TABLE_NAME  = "test"
-  PRIMARY_KEY = "doc_id"
+  PRIMARY_KEY = :doc_id
 
   attr_accessor :repository, :name
 
@@ -39,18 +39,19 @@ class PostgresDb
     query("SELECT * FROM #{@table_name}")
   end
 
-  def add(id: nil, record:)
-    id = id || record[:doc_id] || {PRIMARY_KEY => raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM #{@table_name} ORDER BY #{PRIMARY_KEY} DESC LIMIT 1").first["#{PRIMARY_KEY}"]}
+  def add(record:)
+    id = record[PRIMARY_KEY] || get_last_primary_key
 
-    columns = "#{id.keys.first}, "   + record.keys.join(", ")
-    values  = "#{id.values.first}, " + record.values.join(", ")
+    columns = record.keys.join(", ")
+    values  = record.values.join(", ")
 
+    Logs.add(msg: "#{values}")
     query("INSERT INTO #{@table_name}(#{columns}) VALUES(#{values})")
 
-    query("SELECT * FROM #{@table_name} WHERE #{id.keys.first} = #{id.values.first}")
+    query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{id}").first
   end
 
-  def update(record:)
+  def update(attributes:)
 #Update record requires more work on pasing the record and the values to be updated
     id = record[PRIMARY_KEY]
 
@@ -86,12 +87,20 @@ class PostgresDb
     Logs.add(msg: "Table #{name} was created")
   end
 
-  def find_or_create(doc_id:, record:)
-    element = find(doc_id.values.first)
+#  def find_or_create(id:, record:)
+#    element = find(id.values.first)
+#
+#    return record unless element.nil?
+#
+#    add(id: doc_id, record: record)
+#  end
 
-    return record unless element.nil?
+  def find_or_create_by(field:, record:)
+    element = find_by(field: field, value: record[field])
 
-    add(id: doc_id, record: record)
+    return element unless element.empty?
+
+    add(record: record)
   end
 
   private
@@ -135,7 +144,7 @@ class PostgresDb
           puts e.message
       end
     end
-    
+
     def create_database(name:)
       query("CREATE DATABASE #{name}")
     end
@@ -143,11 +152,15 @@ class PostgresDb
     def delete_database(name:)
       query("DROP DATABASE #{name}")
     end
-    
+
     def get_table_names
      res = raw_sql(sql: "\SELECT * FROM information_schema.tables")
 
      res.select{|table| table["table_schema"] == "public"}.map{|row| row["table_name"]}
+    end
+
+    def get_last_primary_key
+      raw_sql(sql: "SELECT #{PRIMARY_KEY}  FROM #{@table_name} ORDER BY #{PRIMARY_KEY} DESC LIMIT 1").first["#{PRIMARY_KEY}"]
     end
 
     def query(sql)

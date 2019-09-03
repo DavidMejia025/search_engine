@@ -10,8 +10,8 @@ class AbstractRepository
   def add(record:)
     raise "Must override #{__method__}"
   end
-  
-  def update(record:)
+
+  def update(attributes:)
     raise "Must override #{__method__}"
   end
 
@@ -19,6 +19,7 @@ class AbstractRepository
     raise "Must override #{__method__}"
   end
 
+  #find_by_primary_key
   def find(value)
     raise "Must override #{__method__}"
   end
@@ -27,7 +28,7 @@ class AbstractRepository
     raise "Must override #{__method__}"
   end
 
-  def find_or_create(doc_id:, record:)
+  def find_or_create(id:, record:)
     raise "Must override #{__method__}"
   end
 

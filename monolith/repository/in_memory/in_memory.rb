@@ -14,42 +14,55 @@ class InMemory < AbstractRepository
   end
 
   def get_all
-    @repository
+    self.repository
   end
 
   def add(record:)
-    @repository.push(record)
+    self.repository.push(record)
 
-    @repository.last
+    self.repository.last
   end
 
-  def update(record:)
-puts "#{@repository} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
-puts "#{record} ............................................... 5464576547567m ......................."
-    record.each do|k, v|
-      @repository[k] = v
+  def update(attributes:)
+    p attributes
+    p"333"
+    attributes.each do|k, v|
+      self.send("#{k}=", v)
     end
-puts "#{@repository} .............fgdsgdsgdsg sg sdf gsd s dg ......................................."
-  end
 
+    self
+  end
+# this should be the way given the way it is  implemented as array but ....
   def find(value)
-    record = @repository.detect do|record|
-      record[:doc_id] == value
-    end
-
-    record
+    self.repository[value]
   end
-  #this method should be implememnted with_by but for now I leave it without by.
-  def find_or_create(doc_id:, record:)
-    element = self.find(value: doc_id)
 
-    return record unless element.nil?
+#Assuming that all information is in the form of hashes. Dont like it but leave it like this for now.
+ # def find(value)
+ #   result = self.repository.detect do|record|
+ #     record[:doc_id] == value
+ #   end
+
+ #   result
+ # end
+
+#Assuming that all information is in the form of hashes. Dont like it but leave it like this for now.
+  def find_by(field:, value:)
+    self.repository.select {|record| record[field] == value}
+  end
+
+#  def find_or_create(doc_id:, record:)
+#    element = self.find(doc_id)
+#
+#    return element unless element.nil?
+#
+#    self.add(record: record)
+#  end
+  def find_or_create_by(field:, record:)
+    element = self.find_by(field: field, value: record[field])
+
+    return element.first unless element.empty?
 
     self.add(record: record)
-  end
-
-  def find_by(field:, value:)
-#Recap how to get a record from field
-    @repository.select {|record| record.field == value}
   end
 end

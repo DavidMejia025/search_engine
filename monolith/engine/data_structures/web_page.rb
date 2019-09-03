@@ -11,6 +11,10 @@ class WebPage
     @indexed     = false
   end
 
+  def self.all
+     ObjectSpace.each_object(self).to_a
+  end
+  
   def create_document
     document = nil
 

@@ -38,3 +38,31 @@ repository = PostgresTest.new
 ##puts repository.repository.get_all
 ##puts repository.repository.get_all
 ##puts repository.repository.get_all
+
+# add columns..
+#
+# continue:
+
+# PASS THIS TO RSPEC......
+p repository = FactoryRelationalDb.create(name: "web_pages")
+
+#p repository.add(record: {doc_id: 126, url: "'www.google.com'", html_parsed: "'doctype html'"})
+
+#p repository.get_all
+
+#p record = repository.find(123)
+
+p record = repository.find_by(field: :doc_id, value: 123)
+
+#p record.first.update({"doc_id" => 128})
+
+p repository.find_or_create_by(field: :doc_id, record: {doc_id:  136})
+#
+#p "Repository should contains only one element"
+#p repository.get_all
+#
+#p repository.find_or_create_by(field: :doc_id, record: {doc_id: 127})
+#
+#p "Repository should contains two  elements"
+#p repository.get_all
+#
