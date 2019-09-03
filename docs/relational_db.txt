@@ -95,3 +95,7 @@ Requires ALTER permission on the table.
 
              PLEASE TAKE INTO ACCOUNT in psql that " are not allowed and strings have to be labled under ' single quotations.
 
+
+             Best resource
+                http://www.postgresqltutorial.com/
+

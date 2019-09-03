@@ -3,7 +3,7 @@ require_relative "../../services/logs"
 class WebPage
   attr_accessor :indexed, :url, :doc_id, :html_parsed, :page_rank
 
-  def initialize(doc_id: 1, url:,  html_parsed: "", page_rank: 1)
+  def initialize(doc_id: 1, url:,  html_parsed: {}, page_rank: 1)
     @html_parsed = html_parsed
     @doc_id      = doc_id
     @url         = url

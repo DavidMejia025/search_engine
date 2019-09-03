@@ -72,3 +72,6 @@ Search engine:
 
   On docker compose and elastic search examples:
     https://discuss.elastic.co/t/mapping-elasticsearch-port-with-ports-92xx-9200-in-docker/133359/10
+
+
+https://stackoverflow.com/questions/51445846/elastic-search-max-virtual-memory-areas-vm-max-map-count-65530-is-too-low-inc

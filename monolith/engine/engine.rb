@@ -2,6 +2,8 @@ require_relative "../services/logs/"
 require_relative "./indexer/factory_indexer"
 require_relative "../queue/factory_queue"
 require_relative "./parser/html_parser"
+require_relative "./dao/web_page_dao"
+require_relative "./dao/links_table_dao"
 require_relative "./data_structures/web_page"
 require_relative "./data_structures/linked_page"
 require_relative "../repository/factory_repository"
@@ -11,8 +13,8 @@ require "nokogiri"
 
 class Engine
   def initialize
-    @repository   = FactoryRepository.create_web_pages
-    @links_table  = FactoryRepository.create_links_table
+    @repository   = WebPageDao.new
+    @links_table  = LinksTableDao.new
 #Still have some doubts about sending index name from here...
     @indexer      = FactoryIndexer.create(index: "web_pages_1")
     @spider_queue = FactoryQueue.create_spider
@@ -22,7 +24,6 @@ class Engine
   end
 
   def run
-    return true
     @spider_queue.enqueue(msg: "http://www.makeitreal.camp")
 
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
@@ -38,7 +39,7 @@ class Engine
       Logs.add(msg: "Response doc id from ES #{response_doc_id}")
 
       unless response_doc_id == "no records found"
-        current_web_page = @repository.find(response_doc_id.first).url
+        current_web_page = @repository.find_by(field: :doc_id, value: response_doc_id.first).first.url
         Logs.add(msg: "URL found: #{current_web_page}")
       end
 
@@ -53,7 +54,7 @@ class Engine
       html_parsed = parse_html(web_page: crawler_message)
       doc_id      = create_doc_id(url: crawler_message["url"])
 
-      current_web_page = @repository.find(doc_id)
+      current_web_page = @repository.find_by(field: :doc_id, value: doc_id).first
 
       unless current_web_page&.indexed
         index_web_page(crawler_message: crawler_message, doc_id: doc_id, html_parsed: html_parsed)
@@ -70,11 +71,10 @@ class Engine
           html_parsed: html_parsed
         }
       ]
-      
+
       save_web_page(element: element)
-      #store_web_page(attributes: attributes)
-#see if this current web page is uneccesary
-      current_web_page = @repository.find(doc_id)
+
+      current_web_page = @repository.find_by(field: :doc_id, value: doc_id).first
 
       web_page_idx_template = create_web_page_idx_template(web_page: current_web_page)
 
@@ -105,7 +105,6 @@ class Engine
 
     def str_to_ascii(str:)
       array = []
-#optimize? with reduce
       str.each_byte{|ascii| array.push(ascii)}
 
       array.reduce(&:+)
@@ -121,29 +120,28 @@ class Engine
       template
     end
 #Element is not a very good name needs to be renamed 
-    def save_web_page(element:)
-      element.each do|elem|
+    def save_web_page(web_pages:)
+      web_pages.each do|elem|
         doc_id = elem[:doc_id]
 
-        unless @repository.find(doc_id)
-          web_page_element = WebPage.new(
+        if @repository.find_by(field: :doc_id, value: doc_id).empty?
+          record = {
             doc_id:      doc_id,
             url:         elem[:url],
             html_parsed: elem[:html_parsed]
-          )
+          }
 
-          @repository.add(record: web_page_element)
+          @repository.add(record: record)        
 
-          unless @links_table.find(doc_id)
-            linked_page = LinkedPage.new(doc_id: doc_id)
-            save_links(record: linked_page)
+          if @links_table.find_by(field: :doc_id, value: doc_id).empty?
+            save_links(record: {doc_id: doc_id})
           end
         end
       end
     end
 
     def save_links(record:)
-       @links_table.add(record: record)
+      @links_table.add(record: record)
     end
 
     def add_links_to_repository(links:)
@@ -151,7 +149,7 @@ class Engine
         {
           doc_id:      create_doc_id(url: link),
           url:         link,
-          html_parsed: ""
+          html_parsed: {}
         }
       end
 
@@ -160,16 +158,19 @@ class Engine
       links
     end
 
-    def update_links_table(links_table: @links_table, doc_id:, links:)
-      host = @links_table.find_or_create(doc_id: doc_id, record: LinkedPage.new(doc_id: doc_id))
-
+    def update_links_table(doc_id:, links:)
+      host = @links_table.find_or_create_by(field: :doc_id, record: {doc_id: doc_id})
+   
       links.each do|link|
         link_doc_id = create_doc_id(url: link)
 
-        visitor = @links_table.find_or_create(doc_id: link_doc_id, record: LinkedPage.new(doc_id: link_doc_id))
-
+        visitor = @links_table.find_or_create_by(field: :doc_id, record: {doc_id: link_doc_id})
+   
         host.add_out_link(link: link_doc_id)
         visitor.add_in_link(link: host.doc_id)
+
+        @links_table.update(record: host,    attributes: {out_links: host.out_links})
+        @links_table.update(record: visitor, attributes: {in_links: visitor.in_links})
       end
     end
 
@@ -177,7 +178,7 @@ class Engine
       links.each do|link|
         link_doc_id = create_doc_id(url: link)
 
-        web_page = @repository.find(link_doc_id )
+        web_page = @repository.find_by(field: :doc_id, value: link_doc_id ).first
 
         next if web_page.indexed == true
 

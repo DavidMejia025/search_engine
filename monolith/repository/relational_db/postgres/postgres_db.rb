@@ -1,5 +1,7 @@
 require_relative "../../../services/logs"
 require 'pg'
+require 'json'
+
 #THink on how to handle errors, at wich level...
 class PostgresDb
   DB_NAME     = "search_engine_test"
@@ -43,9 +45,10 @@ class PostgresDb
     id = record[PRIMARY_KEY] || get_last_primary_key
 
     columns = record.keys.join(", ")
-    values  = record.values.join(", ")
+    values  = record.values.map do|val|
+                val = parse_value(val)
+              end.join(", ")
 
-    Logs.add(msg: "#{values}")
     query("INSERT INTO #{@table_name}(#{columns}) VALUES(#{values})")
 
     query("SELECT * FROM #{@table_name} WHERE #{PRIMARY_KEY} = #{id}").first
@@ -54,14 +57,12 @@ class PostgresDb
   def update(record:, attributes:)
 # Update record requires more work on pasing the record and the values to be updated
 # This smeells a lot should be fixed with with_indifirent acces"
-   p id = record[PRIMARY_KEY] || record[PRIMARY_KEY.to_s]
+      id = record[PRIMARY_KEY] || record[PRIMARY_KEY.to_s]
     
-     col_val_pairs = attributes.map do|k,v| 
-#Review what happens with the type of objects when db returns a record what happen with the var type.
-      #      v = 'v'  if v.class == String
-      "#{k} = #{v}"
-    end.join(", ")
-p col_val_pairs
+      col_val_pairs = attributes.map do|k,v| 
+        val = parse_value(v)
+        "#{k} = #{val}"
+      end.join(", ")
 
     query("UPDATE #{@table_name} SET #{col_val_pairs} WHERE #{PRIMARY_KEY} = #{id}")
 
@@ -160,7 +161,7 @@ p col_val_pairs
     end
 
     def get_table_names
-     res = raw_sql(sql: "\SELECT * FROM information_schema.tables")
+     res = raw_sql(sql: "SELECT * FROM information_schema.tables")
 
      res.select{|table| table["table_schema"] == "public"}.map{|row| row["table_name"]}
     end
@@ -171,5 +172,15 @@ p col_val_pairs
 
     def query(sql)
       @con.exec(sql).map{|row| row}
+    end
+
+    def parse_value(val)
+      val = "'" + val + "'"         if val.class == String
+      val = "'" + val.to_json + "'" if val.class == Hash
+      if val.class == Array
+        val = "'" + val.to_s.gsub("[","{").gsub("]","}") + "'" 
+      end
+
+      val
     end
 end

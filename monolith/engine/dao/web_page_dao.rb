@@ -1,7 +1,11 @@
 require_relative "../../repository/factory_repository"
 require_relative "../data_structures/web_page"
 
+require 'json'
+
 class WebPageDao
+  attr_accessor :repository
+
   def initialize
     @repository = FactoryRepository.create_web_pages
   end
@@ -11,12 +15,10 @@ class WebPageDao
   end
 
   def update(record:, attributes:)
-    p "1234567890"
-    p record
-    p hash = from_instance_to_hash(record)
-p    web_page_data = @repository.update(record: hash, attributes: attributes)
+    hash = from_instance_to_hash(record)
+    web_page_data = @repository.update(record: hash, attributes: attributes)
 
-     instance_web_page(web_page_data)
+    instance_web_page(web_page_data)
   end
 
   def get_all
@@ -28,10 +30,9 @@ p    web_page_data = @repository.update(record: hash, attributes: attributes)
   end
 
   def find_by(field:, value:)
-    p web_pages_data = @repository.find_by(field: field, value: value)
+    web_pages_data = @repository.find_by(field: field, value: value)
 
     web_pages_data.map do|web_page_data|
-p       web_page_data
       instance_web_page(web_page_data)
     end
   end
@@ -41,17 +42,17 @@ p       web_page_data
  # end
 
   def find_or_create_by(field:, record:)
-p     web_page_data = @repository.find_or_create_by(field: field, record: record)
-p "222222222222222"
-     instance_web_page(web_page_data)
+    web_page_data = @repository.find_or_create_by(field: field, record: record)
+
+    instance_web_page(web_page_data)
   end
 
    def instance_web_page(data)
-     WebPage.new(
-       doc_id:      query_with_indiferent_access(data: data, key: :doc_id),
-       url:         query_with_indiferent_access(data: data, key: :url),
-       html_parsed: query_with_indiferent_access(data: data, key: :html),
-       page_rank:   query_with_indiferent_access(data: data, key: :page_rank)
+      WebPage.new(
+        doc_id:      query_with_indiferent_access(data: data, key: :doc_id),
+        url:         query_with_indiferent_access(data: data, key: :url),
+        html_parsed: parse_html_parsed(query_with_indiferent_access(data: data, key: :html_parsed)),
+        page_rank:   query_with_indiferent_access(data: data, key: :page_rank)
      )
    end
 
@@ -70,5 +71,10 @@ p "222222222222222"
 
    def query_with_indiferent_access(data:, key:)
      data[key] || data[key.to_s]
+   end
+
+   def parse_html_parsed(html_parsed)
+      html_parsed = JSON.parse(html_parsed) unless @repository.class == InMemory
+      html_parsed
    end
 end
