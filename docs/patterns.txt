@@ -1,0 +1,17 @@
+Study some Design patterns
+
+Singleton
+  The singleton is a pattern where a class can be instaciated Only Once.
+  https://www.arquitecturajava.com/ejemplo-de-java-singleton-patrones-classloaders/
+
+   To implement it use the following procedure: un método estático publico que se encarga de instanciar el objeto la primera vez y almacenarlo en la variable estática.
+   "¿El patrón Singleton nos genera un único objeto para una clase Java? . La respuesta mas normal es “SI” sin embargo esta no es verdad del todo .La respuesta correcta es que el patron Singleton nos genera un objeto por cada clase cargada en el mismo ClassLoader.¿ Que quiere decir esto?. Pues quiere decir que por ejemplo dos aplicaciones web que cada una tiene su propio WebClassLoader tendrán cada una so propia instancia."
+
+  En este caso si podemos tener problemas ya que el objeto Singleton que en principio fue diseñado para configurar una aplicación concreta estará compartido por varias. Mucho ojo sobre como gestionamos este patrón de diseño ya que facilmente causará problema.
+
+
+Factory
+
+Interfaces
+
+even driven something

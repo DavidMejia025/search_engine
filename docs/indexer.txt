@@ -1,0 +1,77 @@
+references:
+  https://slideplayer.com/slide/7550244/
+  https://docs.google.com/viewer?url=https://raw.githubusercontent.com/Himmele/My-Blog-Repository/master/Search%20Engines/Google-%20Data%20Structures%20and%20Algorithms.pdf
+
+Database Index:
+  The indexes are DataStructures that stores a value and a memory location for an attribute in a B/tree fashon.
+  By having indexes relational databases are capable to performe fast queries over the table columns. It is
+  possible to create non default indexes that compromise multiple columns.
+
+  The indexes stores the values of a column in such a way that a b/search can be performed to respond to a query on that column.
+
+  http://coding-geek.com/how-databases-work/
+
+Search engine:
+  Search engine wy do I need them  https://www.youtube.com/watch?v=dBRUYfgj-ig
+
+  Apache Lucene (the real search engine):
+    "Lucene is a Java full-text search engine. Lucene is not a complete application, but rather a code library and API that can easily be used to add search capabilities to applications."
+
+  Apache Solr(the sercher):
+    Search platform based on lucene jaba library. Solr is designed for scalability and Fault tolerance.[2] Solr is the most popular enterprise search engine. Solr works with Hypertext Transfer Protocol (HTTP) Extensible Markup Language (XML). It offers application program interfaces (APIs) for JavaScript Object Notation (JSON), Python, and Ruby.
+    https://www.quora.com/What-is-Apache-Solr
+
+  Elastic Search:
+    Elastic search is a restful service build on lucene search engine library. Its allows to store information, index it
+    and then search or retrieve in a eficient way.
+
+    From the getting started page is clear to understand how the service work, where you define an index, for the moment
+    it sounds like a bucked where you put documents and latter through a query system you query in wich documents the word
+    searched was performed.
+
+    https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-search.html
+
+    Ruby gem
+      https://rubydoc.info/gems/elasticsearch-api
+
+    Install with docker:
+      https://www.elastic.co/guide/en/elasticsearch/reference/5.1/docker.html
+  https://blog.expertrec.com/solr-vs-elasticsearch-which-is-better/
+  Elastic search is the winner, solaris seems to be a little bit more complicated with spetialize features that are not mandatory
+  at the moment.
+  "Conclusion- Elastic search and SOLR both are pretty similar in almost all areas. If you are looking for complete freedom in your search engine development, you could take up SOLR- you will not be disappointed. Elastic search is a better choice if you are willing to shell out some money."
+
+  https://www.searchtechnologies.com/blog/solr-vs-elasticsearch-top-open-source-search
+  https://sematext.com/blog/solr-vs-elasticsearch-differences/
+  https://www.quora.com/How-do-Lucene-Elasticsearch-and-Solr-compare
+  https://www.datanyze.com/market-share/enterprise-search/elasticsearch-vs-apache-solr
+  https://www.datanyze.com/market-share/enterprise-search/elasticsearch-vs-apache-lucene
+  https://www.datanyze.com/market-share/enterprise-search/elasticsearch-vs-google-search-appliance
+
+  ElasticSearch:
+
+  Elastic search provides a pair of enpoints to index documents under a certain label (index) and search for looking at matches inside the
+  documents or shareds in the index.
+
+  For the document to be indexed it must be a json document where es will look inside the values for the appearience of the word queried.
+
+  Index documentation:
+    https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html
+      Routing:
+        It is the possibility to define in which shard a document should be placed
+  multi-query:
+    https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html#query-dsl-multi-match-query
+  query and filters:
+    https://www.elastic.co/guide/en/elasticsearch/reference/6.5/query-filter-context.html
+  Script fields:
+    https://www.elastic.co/guide/en/elastic-stack-overview/6.3/ml-configuring-transform.html
+  Awesome aggregatios
+    https://raygun.com/blog/intro-elasticsearchs-awesome-aggregations/
+  23 Useful Elasticsearch Example Queries
+    https://dzone.com/articles/23-useful-elasticsearch-example-queries
+
+  On docker compose and elastic search examples:
+    https://discuss.elastic.co/t/mapping-elasticsearch-port-with-ports-92xx-9200-in-docker/133359/10
+
+
+https://stackoverflow.com/questions/51445846/elastic-search-max-virtual-memory-areas-vm-max-map-count-65530-is-too-low-inc
