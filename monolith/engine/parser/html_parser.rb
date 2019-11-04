@@ -1,8 +1,4 @@
 class HtmlParser
-# Is this a data structure just because it can and really gets instantiated?
-# or just a SERVICE(which should go into service folder?) complementary chunks of corde. Compare with Web page 
-# or lined page.
-
   def initialize(url:, html:)
     @html = Nokogiri::HTML(html)
     @url  = url
@@ -34,7 +30,6 @@ class HtmlParser
     result = @html.search("body").to_s.gsub("'","@").gsub('"',"@@")
   end
 
-# review this code re looking at it it smells ...
   def get_links
     links = @html.search("a").map{|node| node.attributes['href']&.value}
 

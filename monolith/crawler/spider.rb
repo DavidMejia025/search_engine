@@ -4,10 +4,6 @@ require_relative "../queue/factory_queue"
 require "httparty"
 
 class Spider
-  def initialize
-#to add httparty client but is it really necessay?
-  end
-
   def crawl_web_pages
     spider_queue = FactoryQueue.create_spider
     engine_queue = FactoryQueue.create_engine

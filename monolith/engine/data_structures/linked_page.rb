@@ -6,7 +6,7 @@ class LinkedPage
     @in_links  = []
     @out_links = []
   end
-#add link should be ok but persists should be abother responsability
+
   def add_in_link(link:)
     @in_links.push(link)
   end

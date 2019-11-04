@@ -15,7 +15,6 @@ class Engine
   def initialize
     @repository   = WebPageDao.new
     @links_table  = LinksTableDao.new
-#Still have some doubts about sending index name from here...
     @indexer      = FactoryIndexer.create(index: "web_pages_1")
     @spider_queue = FactoryQueue.create_spider
     @engine_queue = FactoryQueue.create_engine
@@ -24,15 +23,16 @@ class Engine
   end
 
   def run
+
     @spider_queue.enqueue(msg: "http://www.makeitreal.camp")
 
     @engine_queue.q.subscribe(block: true) do |delivery_info, properties, msg|
       crawler_message = JSON.parse(msg)
-# This (links = process) smells for me.....
+
       links = process_web_page(crawler_message: JSON.parse(msg))
 
       crawl_web(q: @spider_queue, links: links)
-#this is client part
+
       Logs.add(msg: "Query elastic-search with the followin url: #{ crawler_message["url"]}")
 
       response_doc_id = search_web_pages(query: crawler_message["url"])
@@ -72,7 +72,8 @@ class Engine
         }
       ]
 
-      save_web_page(element: element)
+
+      save_web_page(web_pages: element)
 
       current_web_page = @repository.find_by(field: :doc_id, value: doc_id).first
 
@@ -80,14 +81,12 @@ class Engine
 
       @indexer.index(document: web_page_idx_template) unless web_page_idx_template == "Failed to create document"
     end
-#This method could have a better name if you want please try guessing something else
+
     def update_links(html_parsed:, doc_id:)
       links = add_links_to_repository(links: html_parsed[:links])
 
       update_links_table(doc_id: doc_id, links: links)
-#Not sure if this is the best way to pass the links to the enqueue or its better to have a memory alocation
-#for current links in links table or something like that, but in that case the traidoff of requestiong or hitting
-# the database multilple times could cound and affect what do you think on this?
+
       links
     end
 
@@ -119,7 +118,7 @@ class Engine
 
       template
     end
-#Element is not a very good name needs to be renamed 
+
     def save_web_page(web_pages:)
       web_pages.each do|elem|
         doc_id = elem[:doc_id]
@@ -131,7 +130,7 @@ class Engine
             html_parsed: elem[:html_parsed]
           }
 
-          @repository.add(record: record)        
+          @repository.add(record: record)
 
           if @links_table.find_by(field: :doc_id, value: doc_id).empty?
             save_links(record: {doc_id: doc_id})
@@ -153,19 +152,19 @@ class Engine
         }
       end
 
-      save_web_page(element: web_pages)
+      save_web_page(web_pages: web_pages)
 
       links
     end
 
     def update_links_table(doc_id:, links:)
       host = @links_table.find_or_create_by(field: :doc_id, record: {doc_id: doc_id})
-   
+
       links.each do|link|
         link_doc_id = create_doc_id(url: link)
 
         visitor = @links_table.find_or_create_by(field: :doc_id, record: {doc_id: link_doc_id})
-   
+
         host.add_out_link(link: link_doc_id)
         visitor.add_in_link(link: host.doc_id)
 
@@ -192,5 +191,4 @@ class Engine
 end
 
 engine = Engine.new
-
 engine.run

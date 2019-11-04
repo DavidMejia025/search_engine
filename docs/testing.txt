@@ -1,6 +1,0 @@
-Testing
-
-Basics:
-  Rspec:
-    use Rspec out of rails
-      https://gist.github.com/maxivak/720fc38769c94a59893f#file-02-setup
